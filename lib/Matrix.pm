@@ -2,28 +2,26 @@
 use v5.40;
 use experimental qw[ class ];
 
+use Vector;
 
-package Matrix::Builder {
-    sub eye ($, $eye_shape) {
-        my ($rows, $cols) = @$eye_shape;
-
+package Matrix::Strategy {
+    sub eye ($, $size) {
         return Matrix->new(
-            shape => $eye_shape,
-            data  => [ map { (0) x ($_ - 1), 1, (0) x ($rows - $_) } 1 .. $rows ]
+            shape => [ $size, $size ],
+            data  => [ map { (0) x ($_ - 1), 1, (0) x ($size - $_) } 1 .. $size ]
         )
     }
 
     sub diagonal ($, $vector) {
-        my $vsize = $vector->size;
-        my $msize = $vsize * $vsize;
+        my $size = $vector->size;
 
-        my @new = (0) x $msize;
-        for (my $x = 0; $x < $vsize; $x++) {
-            $new[$x * $vsize + $x] = $vector->at($x);
+        my @new = (0) x ($size * $size);
+        for (my $x = 0; $x < $size; $x++) {
+            $new[$x * $size + $x] = $vector->at($x);
         }
 
         return Matrix->new(
-            shape => [ $vsize, $vsize ],
+            shape => [ $size, $size ],
             data  => \@new
         );
     }
@@ -71,8 +69,8 @@ class Matrix {
 
     # --------------------------------------------------------------------------
 
-    sub eye ($, $shape)  { Matrix::Builder->eye($shape)  }
-    sub diagonal ($, $v) { Matrix::Builder->diagonal($v) }
+    sub eye      ($, $size)   { Matrix::Strategy->eye($size)        }
+    sub diagonal ($, $vector) { Matrix::Strategy->diagonal($vector) }
 
     # --------------------------------------------------------------------------
 
@@ -81,7 +79,7 @@ class Matrix {
 
         $by = -$by;
 
-        return Matrix::Builder->transform(
+        return Matrix::Strategy->transform(
             [ @$shape ],
             sub ($x, $y) {
                 return $data->[ $x * $rows + ($y + $by) ]
@@ -101,21 +99,48 @@ class Matrix {
         return ( ($x * $shape->[0]) .. (($x * $shape->[0]) + ($shape->[1] - 1)) )
     }
 
-    method is_compatible_with ($other) {
-        return @$shape eq $other->shape->@*
+    method col_indices ($y) {
+        my ($rows, $cols) = @$shape;
+        return map { $cols * $_ + $y } 0 .. ($rows - 1);
+    }
+
+    # --------------------------------------------------------------------------
+
+    method row_vector_at ($x) {
+        return Vector->new(
+            size => $shape->[0],
+            data => [ $data->@[ $self->row_indices($x) ] ],
+        )
+    }
+
+    method col_vector_at ($y) {
+        return Vector->new(
+            size => $shape->[1],
+            data => [ $data->@[ $self->col_indices($y) ] ],
+        )
     }
 
     # --------------------------------------------------------------------------
 
     method unary_op ($f) {
-        return Matrix::Builder->transform(
+        return Matrix::Strategy->transform(
             [ @$shape ],
             sub ($x, $y) { $f->( $self->at($x, $y) ) }
         )
     }
 
     method binary_op ($f, $other) {
-        return Matrix::Builder->transform(
+        return Matrix::Strategy->transform(
+            [ @$shape ],
+            sub ($x, $y) { $f->( $self->at($x, $y), $other ) }
+        ) unless blessed $other;
+
+        return Matrix::Strategy->transform(
+            [ @$shape ],
+            sub ($x, $y) { $f->( $self->at($x, $y), $other->at($y) ) }
+        ) if $other isa Vector;
+
+        return Matrix::Strategy->transform(
             [ @$shape ],
             sub ($x, $y) { $f->( $self->at($x, $y), $other->at($x, $y) ) }
         )

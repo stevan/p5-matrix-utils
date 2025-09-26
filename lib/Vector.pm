@@ -35,10 +35,14 @@ class Vector {
     }
 
     method binary_op ($f, $other) {
-        die "Incompatible vectors!" unless $size == $other->size;
         return Vector->new(
             size => $size,
-            data => [ map { $f->( $data->[$_], $other->data->[$_] ) } 0 .. ($size - 1) ]
+            data => [ map { $f->( $self->at($_), $other ) } 0 .. ($size - 1) ]
+        ) unless blessed $other;
+
+        return Vector->new(
+            size => $size,
+            data => [ map { $f->( $self->at($_), $other->at($_) ) } 0 .. ($size - 1) ]
         )
     }
 
