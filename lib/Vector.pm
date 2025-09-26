@@ -5,6 +5,7 @@ use experimental qw[ class ];
 use Carp;
 use List::Util;
 
+use Matrix::Strategy;
 use Operations;
 
 class Vector {
@@ -35,6 +36,13 @@ class Vector {
         return $self->reduce(sub ($acc, $x) {
             $acc + ($x * $other->at($i++))
         }, 0)
+    }
+
+    method matrix_multiply ($other) {
+        return Vector->new(
+            size => $size,
+            data => [ map { $self->dot_product($other->col_vector_at($_)) } 0 .. ($size - 1) ]
+        )
     }
 
     # --------------------------------------------------------------------------
