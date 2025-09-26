@@ -33,9 +33,7 @@ class Vector {
 
     method dot_product ($other) {
         my $i = 0;
-        return $self->reduce(sub ($acc, $x) {
-            $acc + ($x * $other->at($i++))
-        }, 0)
+        return $self->reduce(sub ($acc, $x) { $acc + ($x * $other->at($i++)) }, 0)
     }
 
     method matrix_multiply ($other) {

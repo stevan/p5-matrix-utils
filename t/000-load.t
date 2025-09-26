@@ -42,13 +42,13 @@ my $s1 = Vector->new(size => 10, data => [ 1, (0) x 9 ]);
 
 say "s1 = ", $s1, "\n";
 say "t  = \n", $t, "\n";
-say "s2 = ", (my $s2 = $s1->matrix_multiply($t));
-say "s3 = ", (my $s3 = $s2->matrix_multiply($t));
-say "s4 = ", (my $s4 = $s3->matrix_multiply($t));
-say "s5 = ", (my $s5 = $s4->matrix_multiply($t));
-say "s6 = ", (my $s6 = $s5->matrix_multiply($t));
-say "s7 = ", (my $s7 = $s6->matrix_multiply($t));
-say "s8 = ", (my $s8 = $s7->matrix_multiply($t));
-say "s9 = ", (my $s9 = $s8->matrix_multiply($t));
-say "s0 = ", ($s9->matrix_multiply($t));
+say "s2 = ", (my $s2 = $t->matrix_multiply($s1));
+say "s3 = ", (my $s3 = $t->matrix_multiply($s2));
+say "s4 = ", (my $s4 = $t->matrix_multiply($s3));
+say "s5 = ", (my $s5 = $t->matrix_multiply($s4));
+say "s6 = ", (my $s6 = $t->matrix_multiply($s5));
+say "s7 = ", (my $s7 = $t->matrix_multiply($s6));
+say "s8 = ", (my $s8 = $t->matrix_multiply($s7));
+say "s9 = ", (my $s9 = $t->matrix_multiply($s8));
+say "s0 = ", ($t->matrix_multiply($s9));
 

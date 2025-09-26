@@ -118,6 +118,8 @@ class Matrix {
     # --------------------------------------------------------------------------
 
     method matrix_multiply ($other) {
+        return $other->matrix_multiply($self) if $other isa Vector;
+
         return Matrix::Strategy->transform(
             [ $shape->[0], $other->shape->[1] ],
             sub ($x, $y) {
