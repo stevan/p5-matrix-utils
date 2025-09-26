@@ -2,15 +2,14 @@
 use v5.40;
 use experimental qw[ class ];
 
-class Vector {
-    use List::Util qw[ min max ];
+use Carp;
+use List::Util;
 
+use Operations;
+
+class Vector {
     use overload (
-        '+'  => 'add',
-        '-'  => 'sub',
-        '*'  => 'mul',
-        '/'  => 'div',
-        '%'  => 'mod',
+        %Operations::OVERLOADS,
         '""' => 'to_string',
     );
 
@@ -19,13 +18,30 @@ class Vector {
 
     ADJUST {
         $data = [ ($data) x $size ] unless ref $data;
-        die "Bad data size, expected ${size} got (".(scalar @$data).")"
+        Carp::confess "Bad data size, expected ${size} got (".(scalar @$data).")"
             if scalar @$data != $size;
     }
+
+    # --------------------------------------------------------------------------
 
     method at ($idx) { return $data->[ $idx ] }
 
     # --------------------------------------------------------------------------
+
+    method sum { $self->reduce(\&Operations::add, 0) }
+
+    method dot_product ($other) {
+        my $i = 0;
+        return $self->reduce(sub ($acc, $x) {
+            $acc + ($x * $other->at($i++))
+        }, 0)
+    }
+
+    # --------------------------------------------------------------------------
+
+    method reduce ($f, $initial) {
+        return List::Util::reduce { $f->($a, $b) } $initial, @$data
+    }
 
     method unary_op ($f) {
         return Vector->new(
@@ -48,13 +64,13 @@ class Vector {
 
     # --------------------------------------------------------------------------
 
-    method neg { $self->unary_op(sub ($n) { -$n }) }
+    method neg { $self->unary_op(\&Operations::neg) }
 
-    method add ($other, @) { $self->binary_op(sub ($n, $m) { $n + $m }, $other) }
-    method sub ($other, @) { $self->binary_op(sub ($n, $m) { $n - $m }, $other) }
-    method mul ($other, @) { $self->binary_op(sub ($n, $m) { $n * $m }, $other) }
-    method div ($other, @) { $self->binary_op(sub ($n, $m) { $n % $m }, $other) }
-    method mod ($other, @) { $self->binary_op(sub ($n, $m) { $n / $m }, $other) }
+    method add ($other, @) { $self->binary_op(\&Operations::add, $other) }
+    method sub ($other, @) { $self->binary_op(\&Operations::sub, $other) }
+    method mul ($other, @) { $self->binary_op(\&Operations::mul, $other) }
+    method div ($other, @) { $self->binary_op(\&Operations::div, $other) }
+    method mod ($other, @) { $self->binary_op(\&Operations::mod, $other) }
 
     # --------------------------------------------------------------------------
 

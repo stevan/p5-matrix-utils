@@ -3,55 +3,14 @@ use v5.40;
 use experimental qw[ class ];
 
 use Vector;
-
-package Matrix::Strategy {
-    sub eye ($, $size) {
-        return Matrix->new(
-            shape => [ $size, $size ],
-            data  => [ map { (0) x ($_ - 1), 1, (0) x ($size - $_) } 1 .. $size ]
-        )
-    }
-
-    sub diagonal ($, $vector) {
-        my $size = $vector->size;
-
-        my @new = (0) x ($size * $size);
-        for (my $x = 0; $x < $size; $x++) {
-            $new[$x * $size + $x] = $vector->at($x);
-        }
-
-        return Matrix->new(
-            shape => [ $size, $size ],
-            data  => \@new
-        );
-    }
-
-    sub transform ($, $shape, $f) {
-        my ($rows, $cols) = @$shape;
-
-        my @new = (0) x ($rows * $cols);
-        for (my $x = 0; $x < $rows; $x++) {
-            for (my $y = 0; $y < $cols; $y++) {
-                $new[$x * $rows + $y] = $f->( $x, $y )
-            }
-        }
-
-        return Matrix->new(
-            shape => [ @$shape ],
-            data  => \@new
-        )
-    }
-}
+use Operations;
+use Matrix::Strategy;
 
 class Matrix {
     use List::Util qw[ min max ];
 
     use overload (
-        '+'  => 'add',
-        '-'  => 'sub',
-        '*'  => 'mul',
-        '/'  => 'div',
-        '%'  => 'mod',
+        %Operations::OVERLOADS,
         '""' => 'to_string',
     );
 
@@ -96,7 +55,7 @@ class Matrix {
     method index ($x, $y) { $x * $shape->[1] + $y }
 
     method row_indices ($x) {
-        return ( ($x * $shape->[0]) .. (($x * $shape->[0]) + ($shape->[1] - 1)) )
+        return $self->index( $x, 0 ) .. $self->index( $x, ($shape->[1] - 1) )
     }
 
     method col_indices ($y) {
@@ -108,14 +67,14 @@ class Matrix {
 
     method row_vector_at ($x) {
         return Vector->new(
-            size => $shape->[0],
+            size => $shape->[1],
             data => [ $data->@[ $self->row_indices($x) ] ],
         )
     }
 
     method col_vector_at ($y) {
         return Vector->new(
-            size => $shape->[1],
+            size => $shape->[0],
             data => [ $data->@[ $self->col_indices($y) ] ],
         )
     }
@@ -148,13 +107,25 @@ class Matrix {
 
     # --------------------------------------------------------------------------
 
-    method neg { $self->unary_op(sub ($n) { -$n }) }
+    method neg { $self->unary_op(\&Operations::neg) }
 
-    method add ($other, @) { $self->binary_op(sub ($n, $m) { $n + $m }, $other) }
-    method sub ($other, @) { $self->binary_op(sub ($n, $m) { $n - $m }, $other) }
-    method mul ($other, @) { $self->binary_op(sub ($n, $m) { $n * $m }, $other) }
-    method div ($other, @) { $self->binary_op(sub ($n, $m) { $n % $m }, $other) }
-    method mod ($other, @) { $self->binary_op(sub ($n, $m) { $n / $m }, $other) }
+    method add ($other, @) { $self->binary_op(\&Operations::add, $other) }
+    method sub ($other, @) { $self->binary_op(\&Operations::sub, $other) }
+    method mul ($other, @) { $self->binary_op(\&Operations::mul, $other) }
+    method div ($other, @) { $self->binary_op(\&Operations::div, $other) }
+    method mod ($other, @) { $self->binary_op(\&Operations::mod, $other) }
+
+    # --------------------------------------------------------------------------
+
+    method matrix_multiply ($other) {
+        return Matrix::Strategy->transform(
+            [ $shape->[0], $other->shape->[1] ],
+            sub ($x, $y) {
+                $self->row_vector_at($x)
+                        ->dot_product($other->col_vector_at($y));
+            }
+        )
+    }
 
     # --------------------------------------------------------------------------
 
@@ -164,7 +135,7 @@ class Matrix {
         for (my $x = 0; $x < $rows; $x++) {
             push @out =>
                 join ' ' =>
-                    map { sprintf('%2d', $_) }
+                    map { sprintf('%3d', $_) }
                         $data->@[ $self->row_indices( $x ) ];
         }
         return join "\n" => @out;

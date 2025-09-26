@@ -9,10 +9,25 @@ use Matrix;
 use Vector;
 
 
-my $x = Matrix->eye(10);
-say $x;
+my $v1 = Vector->new( size => 2, data => [ 2, 3 ] );
+my $v2 = Vector->new( size => 2, data => [ 4, 1 ] );
 
-say "...";
-my $y = ($x + $x->col_vector_at(3) + $x->row_vector_at(5)) * 10;
-say $y;
+say 'v1 = ', $v1;
+say 'v2 = ', $v2;
+say 'v1 . $v2 = ' . $v1->dot_product($v2);
+say 'expected: 11';
+say '';
 
+my $m1 = Matrix->new( shape => [ 2, 3 ], data => [
+    1, 2, 3,
+    4, 5, 6,
+]);
+my $m2 = Matrix->new( shape => [ 3, 2 ], data => [ 7 .. 12 ] );
+
+say "m1 = \n", $m1, "\n";
+say "m2 = \n", $m2, "\n";
+say "m1 . m2 = \n", $m1->matrix_multiply($m2), "\n";
+say q[expected:
+|  58  64 |
+| 139 154 |
+];
