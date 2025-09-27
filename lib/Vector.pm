@@ -5,7 +5,6 @@ use experimental qw[ class ];
 use Carp;
 use List::Util;
 
-use Matrix::Strategy;
 use Operations;
 
 class Vector {

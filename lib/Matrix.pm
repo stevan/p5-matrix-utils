@@ -2,6 +2,8 @@
 use v5.40;
 use experimental qw[ class ];
 
+use Carp;
+
 use Vector;
 use Operations;
 
@@ -16,7 +18,7 @@ class Matrix {
 
     ADJUST {
         $data = [ ($data) x $self->size ] unless ref $data;
-        die "Bad data size, expected ".$self->size." got (".(scalar @$data).")"
+        Carp::confess "Bad data size, expected ".$self->size." got (".(scalar @$data).")"
             if scalar @$data != $self->size;
     }
 
