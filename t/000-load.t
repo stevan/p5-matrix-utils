@@ -37,8 +37,8 @@ say q[expected:
 
 
 my $t = Matrix->eye(10)->shift_horz(1); # + Matrix->diagonal( Vector->new( size => 10, data => 1 ) );
-my $s1 = Matrix->new(shape => [ 1, 10 ], data => [ 1, (0) x 9 ]);
-my $s1 = Vector->new(size => 10, data => [ 1, (0) x 9 ]);
+#my $s1 = Matrix->new(shape => [ 1, 10 ], data => [ 1, (0) x 9 ]);
+my $s1 = Vector->new(size => 10, data => [ 2, 0, 0, 1, 0, 3, 0, 0, 4, 0 ]);
 
 say "s1 = ", $s1, "\n";
 say "t  = \n", $t, "\n";
