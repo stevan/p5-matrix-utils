@@ -153,6 +153,16 @@ class Matrix {
         )
     }
 
+    method copy_row ($from, $to) {
+        return __CLASS__->construct(
+            $self->copy_shape,
+            sub ($x, $y) {
+                return $self->at($from, $y) if $x == $to;
+                return $self->at($x, $y);
+            }
+        )
+    }
+
     # --------------------------------------------------------------------------
     # Generic Operations
     # --------------------------------------------------------------------------
