@@ -23,9 +23,26 @@ class Vector {
     }
 
     # --------------------------------------------------------------------------
+    # accessing elements
+    # --------------------------------------------------------------------------
 
-    method at ($idx) { return $data->[ $idx ] }
+    method at ($idx) {
+        Carp::confess "Index out of bounds (${idx})"
+            if $idx < 0 || $idx > ($size - 1);
+        return $data->[ $idx ]
+    }
 
+    method index_of ($value) {
+        my $i = 0;
+        while ($i < $size) {
+            return $i if $self->at( $i ) == $value;
+            $i++;
+        }
+        return -1;
+    }
+
+    # --------------------------------------------------------------------------
+    # scalar results
     # --------------------------------------------------------------------------
 
     method sum { $self->reduce(\&Operations::add, 0) }
@@ -35,13 +52,19 @@ class Vector {
         return $self->reduce(sub ($acc, $x) { $acc + ($x * $other->at($i++)) }, 0)
     }
 
+    # --------------------------------------------------------------------------
+    # Matrix multiplication
+    # --------------------------------------------------------------------------
+
     method matrix_multiply ($other) {
         return Vector->new(
-            size => $size,
-            data => [ map { $self->dot_product($other->col_vector_at($_)) } 0 .. ($size - 1) ]
+            size => $other->cols,
+            data => [ map { $self->dot_product($other->col_vector_at($_)) } 0 .. ($other->cols - 1) ]
         )
     }
 
+    # --------------------------------------------------------------------------
+    # generic operations on data
     # --------------------------------------------------------------------------
 
     method reduce ($f, $initial) {
@@ -67,6 +90,8 @@ class Vector {
         )
     }
 
+    # --------------------------------------------------------------------------
+    # math operations
     # --------------------------------------------------------------------------
 
     method neg { $self->unary_op(\&Operations::neg) }

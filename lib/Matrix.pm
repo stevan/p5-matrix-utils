@@ -26,7 +26,12 @@ class Matrix {
     # Private methods
     # --------------------------------------------------------------------------
 
-    method _slice (@indices) { return $data->@[ @indices ] }
+    method _slice (@indices) {
+        ($_ >= 0 && $_ < $self->size)
+            || Carp::confess "Index out of bounds (${_})"
+                foreach @indices;
+        return $data->@[ @indices ]
+    }
 
     # --------------------------------------------------------------------------
     # Accessors
@@ -56,7 +61,7 @@ class Matrix {
         my @new = (0) x ($rows * $cols);
         for (my $x = 0; $x < $rows; $x++) {
             for (my $y = 0; $y < $cols; $y++) {
-                $new[$x * $rows + $y] = $f->( $x, $y )
+                $new[$x * $cols + $y] = $f->( $x, $y )
             }
         }
 
@@ -95,16 +100,24 @@ class Matrix {
     # Index calculators
     # --------------------------------------------------------------------------
 
-    method index ($x, $y) { $x * $self->cols + $y }
+    method index ($x, $y) {
+        Carp::confess "Coord out of bounds x(${x})" if $x > $self->height;
+        Carp::confess "Coord out of bounds x(${y})" if $y > $self->width;
+        return $x * $self->cols + $y;
+    }
 
     method row_indices ($x) {
+        Carp::confess "Coord out of bounds x(${x})" if $x > $self->height;
         return $self->index( $x, 0 ) .. $self->index( $x, $self->width )
     }
 
     method col_indices ($y) {
+        Carp::confess "Coord out of bounds x(${y})" if $y > $self->width;
         return map { $self->index( $_, $y ) } 0 .. $self->height;
     }
 
+    # --------------------------------------------------------------------------
+    # Accessing Elements
     # --------------------------------------------------------------------------
 
     method at ($x, $y) { $self->_slice( $self->index($x, $y) ) }
@@ -124,6 +137,8 @@ class Matrix {
     }
 
     # --------------------------------------------------------------------------
+    # Moving elements
+    # --------------------------------------------------------------------------
 
     method shift_horz ($by) {
         $by = -$by;
@@ -131,13 +146,15 @@ class Matrix {
         return __CLASS__->construct(
             $self->copy_shape,
             sub ($x, $y) {
-                return $self->_slice( $x * $self->rows + ($y + $by) )
+                return $self->_slice( $x * $self->cols + ($y + $by) )
                     if ($y + $by) >= 0 && $y < ($self->cols - $by);
                 return 0;
             }
         )
     }
 
+    # --------------------------------------------------------------------------
+    # Generic Operations
     # --------------------------------------------------------------------------
 
     method unary_op ($f) {
@@ -165,6 +182,8 @@ class Matrix {
     }
 
     # --------------------------------------------------------------------------
+    # Math Operations
+    # --------------------------------------------------------------------------
 
     method neg { $self->unary_op(\&Operations::neg) }
 
@@ -175,10 +194,19 @@ class Matrix {
     method mod ($other, @) { $self->binary_op(\&Operations::mod, $other) }
 
     # --------------------------------------------------------------------------
+    # Matrix Multiplication
+    # --------------------------------------------------------------------------
 
     method matrix_multiply ($other) {
-        return $other->matrix_multiply($self) if $other isa Vector;
+        # Matrix × Vector: Matrix (m×n) × Vector (n) = Vector (m)
+        if ($other isa Vector) {
+            return Vector->new(
+                size => $self->rows,
+                data => [ map { $self->row_vector_at($_)->dot_product($other) } 0 .. ($self->rows - 1) ]
+            );
+        }
 
+        # Matrix × Matrix: Matrix (m×n) × Matrix (n×p) = Matrix (m×p)
         return __CLASS__->construct(
             [ $self->rows, $other->cols ],
             sub ($x, $y) {
