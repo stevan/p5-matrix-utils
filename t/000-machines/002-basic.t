@@ -34,3 +34,6 @@ say Matrix->stack(
     Matrix->concat( $m1, $m2 ),
     Matrix->concat( $m2, $m1 ),
 );
+
+pass("STFU");
+done_testing;

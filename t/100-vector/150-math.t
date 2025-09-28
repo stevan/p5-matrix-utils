@@ -287,6 +287,66 @@ subtest 'math operations - edge cases' => sub {
     is( $doubled->at(0), 84, 'multiplying single element works' );
 };
 
+subtest 'abs method - absolute value operation' => sub {
+    my $v = Vector->new( size => 4, data => [-1, 2, -3, 4] );
+    my $abs_result = $v->abs;
+
+    isa_ok( $abs_result, 'Vector', 'abs returns a Vector' );
+    is( $abs_result->size, 4, 'result has correct size' );
+    is( $abs_result->at(0), 1, 'element at 0: abs(-1) is 1' );
+    is( $abs_result->at(1), 2, 'element at 1: abs(2) is 2' );
+    is( $abs_result->at(2), 3, 'element at 2: abs(-3) is 3' );
+    is( $abs_result->at(3), 4, 'element at 3: abs(4) is 4' );
+
+    # Test with all negative numbers
+    my $v2 = Vector->new( size => 4, data => [-1, -2, -3, -4] );
+    my $abs_result2 = $v2->abs;
+    is( $abs_result2->at(0), 1, 'all negative: abs(-1) is 1' );
+    is( $abs_result2->at(1), 2, 'all negative: abs(-2) is 2' );
+    is( $abs_result2->at(2), 3, 'all negative: abs(-3) is 3' );
+    is( $abs_result2->at(3), 4, 'all negative: abs(-4) is 4' );
+};
+
+subtest 'abs method - with floating point numbers' => sub {
+    my $v = Vector->new( size => 4, data => [-1.5, 2.5, -3.5, 4.5] );
+    my $abs_result = $v->abs;
+
+    is( $abs_result->at(0), 1.5, 'floating point: abs(-1.5) is 1.5' );
+    is( $abs_result->at(1), 2.5, 'floating point: abs(2.5) is 2.5' );
+    is( $abs_result->at(2), 3.5, 'floating point: abs(-3.5) is 3.5' );
+    is( $abs_result->at(3), 4.5, 'floating point: abs(4.5) is 4.5' );
+};
+
+subtest 'trunc method - truncation operation' => sub {
+    my $v = Vector->new( size => 4, data => [1.7, 2.3, 3.9, 4.1] );
+    my $trunc_result = $v->trunc;
+
+    isa_ok( $trunc_result, 'Vector', 'trunc returns a Vector' );
+    is( $trunc_result->size, 4, 'result has correct size' );
+    is( $trunc_result->at(0), 1, 'element at 0: trunc(1.7) is 1' );
+    is( $trunc_result->at(1), 2, 'element at 1: trunc(2.3) is 2' );
+    is( $trunc_result->at(2), 3, 'element at 2: trunc(3.9) is 3' );
+    is( $trunc_result->at(3), 4, 'element at 3: trunc(4.1) is 4' );
+
+    # Test with negative numbers
+    my $v2 = Vector->new( size => 4, data => [-1.7, -2.3, -3.9, -4.1] );
+    my $trunc_result2 = $v2->trunc;
+    is( $trunc_result2->at(0), -1, 'negative: trunc(-1.7) is -1' );
+    is( $trunc_result2->at(1), -2, 'negative: trunc(-2.3) is -2' );
+    is( $trunc_result2->at(2), -3, 'negative: trunc(-3.9) is -3' );
+    is( $trunc_result2->at(3), -4, 'negative: trunc(-4.1) is -4' );
+};
+
+subtest 'trunc method - with integers' => sub {
+    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $trunc_result = $v->trunc;
+
+    is( $trunc_result->at(0), 1, 'integer: trunc(1) is 1' );
+    is( $trunc_result->at(1), 2, 'integer: trunc(2) is 2' );
+    is( $trunc_result->at(2), 3, 'integer: trunc(3) is 3' );
+    is( $trunc_result->at(3), 4, 'integer: trunc(4) is 4' );
+};
+
 done_testing;
 
 __END__

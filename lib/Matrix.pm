@@ -250,8 +250,8 @@ class Matrix {
 
     method sum { $self->reduce(\&Operations::add, 0) }
 
-    method min_value { $self->reduce(\&Operations::min, 0) }
-    method max_value { $self->reduce(\&Operations::max, 0) }
+    method min_value { $self->reduce(\&Operations::min, $data->[0]) }
+    method max_value { $self->reduce(\&Operations::max, $data->[0]) }
 
     # --------------------------------------------------------------------------
     # Element-Wise Operations
@@ -294,7 +294,7 @@ class Matrix {
     method eq  ($other) { $self->binary_op(\&Operations::eq,  $other) }
     method ne  ($other) { $self->binary_op(\&Operations::ne,  $other) }
     method lt  ($other) { $self->binary_op(\&Operations::lt,  $other) }
-    method le  ($other) { $self->binary_op(\&Operations::lt,  $other) }
+    method le  ($other) { $self->binary_op(\&Operations::le,  $other) }
     method gt  ($other) { $self->binary_op(\&Operations::gt,  $other) }
     method ge  ($other) { $self->binary_op(\&Operations::ge,  $other) }
     method cmp ($other) { $self->binary_op(\&Operations::cmp, $other) }
@@ -319,7 +319,7 @@ class Matrix {
         for (my $x = 0; $x < $self->rows; $x++) {
             push @out =>
                 join ' ' =>
-                    map { sprintf('%3d', $_) }
+                    map { sprintf('%3s', $_) }
                         $self->_slice( $self->row_indices( $x ) );
         }
         return join "\n" => @out;

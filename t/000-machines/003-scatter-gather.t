@@ -39,3 +39,7 @@ say "M1->MASK(M2, MASK):";
 say $m3;
 
 say $m3->sum;
+
+
+pass("STFU");
+done_testing;

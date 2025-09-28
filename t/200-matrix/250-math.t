@@ -415,6 +415,68 @@ subtest 'math operations - edge cases' => sub {
     }
 };
 
+subtest 'abs method - absolute value operation' => sub {
+    my $m = Matrix->new( shape => [2, 2], data => [-1, 2, -3, 4] );
+    my $abs_result = $m->abs;
+
+    isa_ok( $abs_result, 'Matrix', 'abs returns a Matrix' );
+    is( $abs_result->rows, 2, 'result has correct number of rows' );
+    is( $abs_result->cols, 2, 'result has correct number of columns' );
+    is( $abs_result->at(0, 0), 1, 'element at (0,0): abs(-1) is 1' );
+    is( $abs_result->at(0, 1), 2, 'element at (0,1): abs(2) is 2' );
+    is( $abs_result->at(1, 0), 3, 'element at (1,0): abs(-3) is 3' );
+    is( $abs_result->at(1, 1), 4, 'element at (1,1): abs(4) is 4' );
+
+    # Test with all negative numbers
+    my $m2 = Matrix->new( shape => [2, 2], data => [-1, -2, -3, -4] );
+    my $abs_result2 = $m2->abs;
+    is( $abs_result2->at(0, 0), 1, 'all negative: abs(-1) is 1' );
+    is( $abs_result2->at(0, 1), 2, 'all negative: abs(-2) is 2' );
+    is( $abs_result2->at(1, 0), 3, 'all negative: abs(-3) is 3' );
+    is( $abs_result2->at(1, 1), 4, 'all negative: abs(-4) is 4' );
+};
+
+subtest 'abs method - with floating point numbers' => sub {
+    my $m = Matrix->new( shape => [2, 2], data => [-1.5, 2.5, -3.5, 4.5] );
+    my $abs_result = $m->abs;
+
+    is( $abs_result->at(0, 0), 1.5, 'floating point: abs(-1.5) is 1.5' );
+    is( $abs_result->at(0, 1), 2.5, 'floating point: abs(2.5) is 2.5' );
+    is( $abs_result->at(1, 0), 3.5, 'floating point: abs(-3.5) is 3.5' );
+    is( $abs_result->at(1, 1), 4.5, 'floating point: abs(4.5) is 4.5' );
+};
+
+subtest 'trunc method - truncation operation' => sub {
+    my $m = Matrix->new( shape => [2, 2], data => [1.7, 2.3, 3.9, 4.1] );
+    my $trunc_result = $m->trunc;
+
+    isa_ok( $trunc_result, 'Matrix', 'trunc returns a Matrix' );
+    is( $trunc_result->rows, 2, 'result has correct number of rows' );
+    is( $trunc_result->cols, 2, 'result has correct number of columns' );
+    is( $trunc_result->at(0, 0), 1, 'element at (0,0): trunc(1.7) is 1' );
+    is( $trunc_result->at(0, 1), 2, 'element at (0,1): trunc(2.3) is 2' );
+    is( $trunc_result->at(1, 0), 3, 'element at (1,0): trunc(3.9) is 3' );
+    is( $trunc_result->at(1, 1), 4, 'element at (1,1): trunc(4.1) is 4' );
+
+    # Test with negative numbers
+    my $m2 = Matrix->new( shape => [2, 2], data => [-1.7, -2.3, -3.9, -4.1] );
+    my $trunc_result2 = $m2->trunc;
+    is( $trunc_result2->at(0, 0), -1, 'negative: trunc(-1.7) is -1' );
+    is( $trunc_result2->at(0, 1), -2, 'negative: trunc(-2.3) is -2' );
+    is( $trunc_result2->at(1, 0), -3, 'negative: trunc(-3.9) is -3' );
+    is( $trunc_result2->at(1, 1), -4, 'negative: trunc(-4.1) is -4' );
+};
+
+subtest 'trunc method - with integers' => sub {
+    my $m = Matrix->new( shape => [2, 2], data => [1, 2, 3, 4] );
+    my $trunc_result = $m->trunc;
+
+    is( $trunc_result->at(0, 0), 1, 'integer: trunc(1) is 1' );
+    is( $trunc_result->at(0, 1), 2, 'integer: trunc(2) is 2' );
+    is( $trunc_result->at(1, 0), 3, 'integer: trunc(3) is 3' );
+    is( $trunc_result->at(1, 1), 4, 'integer: trunc(4) is 4' );
+};
+
 done_testing;
 
 __END__

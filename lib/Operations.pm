@@ -21,7 +21,7 @@ our %OVERLOADS = (
 
     '!'   => sub ($n, @)     { $n->not },
     '=='  => sub ($n, $m, @) { $n->eq($m) },
-    '=='  => sub ($n, $m, @) { $n->ne($m) },
+    '!='  => sub ($n, $m, @) { $n->ne($m) },
     '<'   => sub ($n, $m, @) { $n->lt($m) },
     '<='  => sub ($n, $m, @) { $n->le($m) },
     '>'   => sub ($n, $m, @) { $n->gt($m) },
@@ -47,15 +47,15 @@ sub div ($n, $m) { $n / $m }
 sub mod ($n, $m) { $n % $m }
 sub pow ($n, $m) { $n ** $m }
 
-sub eq  ($n, $m) { $n == $m }
-sub ne  ($n, $m) { $n == $m }
-sub lt  ($n, $m) { $n <  $m }
-sub le  ($n, $m) { $n <= $m }
-sub gt  ($n, $m) { $n >  $m }
-sub ge  ($n, $m) { $n >= $m }
+sub eq  ($n, $m) { $n == $m ? 1 : 0 }
+sub ne  ($n, $m) { $n != $m ? 1 : 0 }
+sub lt  ($n, $m) { $n <  $m ? 1 : 0 }
+sub le  ($n, $m) { $n <= $m ? 1 : 0 }
+sub gt  ($n, $m) { $n >  $m ? 1 : 0 }
+sub ge  ($n, $m) { $n >= $m ? 1 : 0 }
 sub cmp ($n, $m) { $n <=> $m }
 
-sub not ($n) { !$n }
+sub not ($n) { !$n ? 1 : 0 }
 # TODO: and, or, xor, etc.
 
 ## Misc. Operations

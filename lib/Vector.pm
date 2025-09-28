@@ -85,8 +85,8 @@ class Vector {
 
     method sum { $self->reduce(\&Operations::add, 0) }
 
-    method min_value { $self->reduce(\&Operations::min, 0) }
-    method max_value { $self->reduce(\&Operations::max, 0) }
+    method min_value { $self->reduce(\&Operations::min, $data->[0]) }
+    method max_value { $self->reduce(\&Operations::max, $data->[0]) }
 
     method dot_product ($other) {
         my $i = 0;
@@ -129,7 +129,7 @@ class Vector {
     method eq  ($other) { $self->binary_op(\&Operations::eq,  $other) }
     method ne  ($other) { $self->binary_op(\&Operations::ne,  $other) }
     method lt  ($other) { $self->binary_op(\&Operations::lt,  $other) }
-    method le  ($other) { $self->binary_op(\&Operations::lt,  $other) }
+    method le  ($other) { $self->binary_op(\&Operations::le,  $other) }
     method gt  ($other) { $self->binary_op(\&Operations::gt,  $other) }
     method ge  ($other) { $self->binary_op(\&Operations::ge,  $other) }
     method cmp ($other) { $self->binary_op(\&Operations::cmp, $other) }
