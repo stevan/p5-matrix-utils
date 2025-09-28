@@ -3,6 +3,14 @@ package Operations;
 
 use v5.40;
 
+## ------------------------------------
+## NOTE:
+## If you use these overloads ....
+## you must implement the same methods
+## in the class, which is pretty easy
+## but just FYI, no magic here
+## ------------------------------------
+
 our %OVERLOADS = (
     '+'   => sub ($a, $b, @) { $a->add($b) },
     '-'   => sub ($a, $b, $swap) { $swap ? $a->neg : $a->sub($b) },
@@ -29,6 +37,8 @@ our %OVERLOADS = (
     'neg' => sub ($a, @) { $a->neg },
 );
 
+## Overloaded operations
+
 sub neg ($n)     { -$n }
 sub add ($n, $m) { $n + $m }
 sub sub ($n, $m) { $n - $m }
@@ -45,7 +55,20 @@ sub gt  ($n, $m) { $n >  $m }
 sub ge  ($n, $m) { $n >= $m }
 sub cmp ($n, $m) { $n <=> $m }
 
-sub not ($n)     { !$n }
+sub not ($n) { !$n }
 # TODO: and, or, xor, etc.
+
+## Misc. Operations
+
+sub min ($n, $m) { $n < $m ? $n : $m }
+sub max ($n, $m) { $n > $m ? $n : $m }
+
+sub trunc ($n) { int($n) }
+
+# avoid collision silliness with builtins
+sub Operations::floor ($n) { floor($n) }
+sub Operations::ceil  ($n) { ceil($n) }
+sub Operations::abs   ($n) { abs($n) }
+
 
 __END__

@@ -3,6 +3,7 @@ use v5.40;
 use experimental qw[ class ];
 
 use Carp;
+use List::Util;
 
 use Vector;
 use Operations;
@@ -249,6 +250,9 @@ class Matrix {
 
     method sum { $self->reduce(\&Operations::add, 0) }
 
+    method min_value { $self->reduce(\&Operations::min, 0) }
+    method max_value { $self->reduce(\&Operations::max, 0) }
+
     # --------------------------------------------------------------------------
     # Element-Wise Operations
     # --------------------------------------------------------------------------
@@ -297,6 +301,16 @@ class Matrix {
 
     # Logicical Operations
     method not { $self->unary_op(\&Operations::not) }
+
+    # Misc. Operations
+    method min ($other) { $self->binary_op(\&Operations::min, $other) }
+    method max ($other) { $self->binary_op(\&Operations::max, $other) }
+
+    method trunc { $self->unary_op(\&Operations::trunc) }
+    # FIXME: stupid namespace collisions!
+    #method floor { $self->unary_op(\&Operations::floor) }
+    #method ceil  { $self->unary_op(\&Operations::ceil)  }
+    method abs   { $self->unary_op(\&Operations::abs)   }
 
     # --------------------------------------------------------------------------
 
