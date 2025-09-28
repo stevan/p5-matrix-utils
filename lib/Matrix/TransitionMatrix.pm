@@ -9,7 +9,7 @@ use Vector;
 
 class Matrix::TransitionMatrix :isa(Matrix) {
 
-    sub initialize ($class, $steps, $initial = undef) {
+    sub initialize ($class, $steps, $loop = undef) {
         return $class->eye($steps + 1)->shift_horz(1);
     }
 

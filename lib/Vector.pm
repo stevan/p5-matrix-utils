@@ -38,6 +38,13 @@ class Vector {
         return $class->new( size => $size, data  => \@new );
     }
 
+    sub concat ($class, $a, $b) {
+        return $class->new(
+            size => ($a->size + $b->size),
+            data => [ $a->to_list, $b->to_list ]
+        )
+    }
+
     # --------------------------------------------------------------------------
     # accessing elements
     # --------------------------------------------------------------------------
@@ -122,4 +129,5 @@ class Vector {
 
     method to_string (@) { return '<' . (join ' ' => @$data) . '>' }
 
+    method to_list { return @$data }
 }
