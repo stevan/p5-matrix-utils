@@ -12,42 +12,23 @@ use Data::Dumper qw[ Dumper ];
 use Matrix;
 use Vector;
 
+use Matrix::TransitionMatrix;
+
 class Machine::Stepper {
-    field $steps :param :reader;
+    field $steps   :param :reader;
+    field $looping :param :reader = false;
 
     field $trans :reader;
-    field $state :reader;
 
     ADJUST {
-        $trans = Matrix->eye($steps + 1)->shift_horz(1);
+        $trans = Matrix::TransitionMatrix->initialize($steps);
+        $trans = $trans->copy_row(0, $steps) if $looping;
     }
 
-    method start {
-        return Vector->new( size => $steps + 1, data => [ 1, (0) x $steps ])
-    }
+    method start { $trans->intitial_state_vector }
 
     method step ($state) {
-        return $state->matrix_multiply($trans);
-    }
-}
-
-class Machine::LoopingStepper {
-    field $steps :param :reader;
-
-    field $trans :reader;
-    field $state :reader;
-
-    ADJUST {
-        $trans = Matrix->eye($steps + 1)
-                    ->shift_horz(1)->copy_row(0, $steps);
-    }
-
-    method start {
-        return Vector->new( size => $steps + 1, data => [ 1, (0) x $steps ])
-    }
-
-    method step ($state) {
-        return $state->matrix_multiply($trans);
+        return $trans->transition($state);
     }
 }
 
@@ -97,7 +78,7 @@ subtest '... testing 10 step stepper' => sub {
 
 
 subtest '... testing 10 step loop-stepper' => sub {
-    my $stepper = Machine::LoopingStepper->new( steps => 10 );
+    my $stepper = Machine::Stepper->new( steps => 10, looping => true );
 
     my $state = $stepper->start;
 

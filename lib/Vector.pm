@@ -23,6 +23,22 @@ class Vector {
     }
 
     # --------------------------------------------------------------------------
+    # Static Constructors
+    # --------------------------------------------------------------------------
+
+    sub initialize ($class, $size, $initial) {
+        return $class->new( size => $size, data => $initial )
+    }
+
+    sub construct ($class, $size, $f) {
+        my @new = (0) x $size;
+        for (my $i = 0; $i < $size; $i++) {
+            $new[$i] = $f->( $i )
+        }
+        return $class->new( size => $size, data  => \@new );
+    }
+
+    # --------------------------------------------------------------------------
     # accessing elements
     # --------------------------------------------------------------------------
 
