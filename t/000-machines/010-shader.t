@@ -21,24 +21,24 @@ use Toys::Shader;
 #);
 #$websafe->run(3, 10);
 
-my $SIZE   = 32;
-my $factor = 256 / $SIZE;
-
-my $rgb = Toys::Shader->new(
-    matrix  => Matrix->square($SIZE),
-    palette => 'rgb',
-    shader  => sub ($x, $y, $c) {
-        map $_ * $factor,
-            $x + $c,
-            $y + $c,
-            $x + $c,
-    }
-);
-
-$rgb->run(0, 0);
-
-
-print "\n\n";
+#my $SIZE   = 32;
+#my $factor = 256 / $SIZE;
+#
+#my $rgb = Toys::Shader->new(
+#    matrix  => Matrix->square($SIZE),
+#    palette => 'rgb',
+#    shader  => sub ($x, $y, $c) {
+#        map $_ * $factor,
+#            $x + $c,
+#            $y + $c,
+#            $x + $c,
+#    }
+#);
+#
+#$rgb->run(0, 0);
+#
+#
+#print "\n\n";
 
 pass("STFU");
 done_testing;
