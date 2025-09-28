@@ -64,6 +64,9 @@ sub min ($n, $m) { $n < $m ? $n : $m }
 sub max ($n, $m) { $n > $m ? $n : $m }
 
 sub trunc ($n) { int($n) }
+sub fract ($n) { int($n) - $n }
+
+sub clamp ($min, $max, $n) { max($min, min($max, $n)) }
 
 # avoid collision silliness with builtins
 sub Operations::floor ($n) { floor($n) }

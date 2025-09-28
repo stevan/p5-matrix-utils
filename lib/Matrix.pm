@@ -23,6 +23,8 @@ class Matrix {
             if scalar @$data != $self->size;
     }
 
+    method rank { 2 }
+
     # --------------------------------------------------------------------------
     # Private methods
     # --------------------------------------------------------------------------
@@ -46,6 +48,8 @@ class Matrix {
     method height { $self->rows - 1 }
     method width  { $self->cols - 1 }
 
+    method norms { [ $self->height, $self->width ] }
+
     method size { $self->rows * $self->cols }
 
     # --------------------------------------------------------------------------
@@ -58,6 +62,10 @@ class Matrix {
 
     sub ones  ($class, $shape) { $class->initialize($shape, 1) }
     sub zeros ($class, $shape) { $class->initialize($shape, 0) }
+
+    sub square ($class, $size, $initial=0) {
+        $class->initialize([ $size, $size ], $initial)
+    }
 
     # Build via f(x, y) ________________________________________________________
 
@@ -307,6 +315,7 @@ class Matrix {
     method max ($other) { $self->binary_op(\&Operations::max, $other) }
 
     method trunc { $self->unary_op(\&Operations::trunc) }
+    method fract { $self->unary_op(\&Operations::fract) }
     # FIXME: stupid namespace collisions!
     #method floor { $self->unary_op(\&Operations::floor) }
     #method ceil  { $self->unary_op(\&Operations::ceil)  }
@@ -325,4 +334,13 @@ class Matrix {
         return join "\n" => @out;
     }
 
+    # -Ofun ;)
+    method run_shader ($f) {
+        my ($rows, $cols) = ($self->rows, $self->cols);
+        for (my $x = 0; $x < $rows; $x++) {
+            for (my $y = 0; $y < $cols; $y++) {
+                $f->( $x, $y, $data->[$x * $cols + $y] )
+            }
+        }
+    }
 }
