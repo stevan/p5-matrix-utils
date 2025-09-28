@@ -1,5 +1,3 @@
-
-
 #!perl
 
 use v5.40;
@@ -14,31 +12,33 @@ use Data::Dumper qw[ Dumper ];
 use Matrix;
 use Vector;
 
-#my $m = Matrix->new(
-#    shape => [ 12, 18 ],
-#    data  => [ (1) x 216 ]
+use Toys::Shader;
+
+#my $websafe = Toys::Shader->new(
+#    matrix  => Toys::Shader::Palettes->WebSafe,
+#    palette => 'websafe',
+#    shader  => sub ($x, $y, $c) { $c }
 #);
-#
-#my $ones = Matrix->ones([ 12, 18 ]);
-#
-##say $m;
-#
-#my $offset_x = 3;
-#my $offset_y = 15;
-#
-#while (true) {
-#    $m->run_shader(sub ($x, $y, $c) {
-#        $x += $offset_x;
-#        $y += $offset_y;
-#        $y *= 2; # make it square pixels
-#        printf "\e[${x};${y}H\e[48;5;${c}m  \e[0m";
-#    });
-#
-#    sleep(0.03);
-#    $m = $m->add($ones);
-#}
-#
-#print "\n\n";
+#$websafe->run(3, 10);
+
+my $SIZE   = 32;
+my $factor = 256 / $SIZE;
+
+my $rgb = Toys::Shader->new(
+    matrix  => Matrix->square($SIZE),
+    palette => 'rgb',
+    shader  => sub ($x, $y, $c) {
+        map $_ * $factor,
+            $x + $c,
+            $y + $c,
+            $x + $c,
+    }
+);
+
+$rgb->run(0, 0);
+
+
+print "\n\n";
 
 pass("STFU");
 done_testing;

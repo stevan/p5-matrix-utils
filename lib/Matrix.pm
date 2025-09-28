@@ -14,8 +14,8 @@ class Matrix {
         '""' => 'to_string',
     );
 
-    field $shape :param;
-    field $data  :param;
+    field $shape :param :reader;
+    field $data  :param :reader;
 
     ADJUST {
         $data = [ ($data) x $self->size ] unless ref $data;
@@ -332,15 +332,5 @@ class Matrix {
                         $self->_slice( $self->row_indices( $x ) );
         }
         return join "\n" => @out;
-    }
-
-    # -Ofun ;)
-    method run_shader ($f) {
-        my ($rows, $cols) = ($self->rows, $self->cols);
-        for (my $x = 0; $x < $rows; $x++) {
-            for (my $y = 0; $y < $cols; $y++) {
-                $f->( $x, $y, $data->[$x * $cols + $y] )
-            }
-        }
     }
 }
