@@ -2,6 +2,7 @@ use v5.40;
 use experimental qw[ class ];
 
 use Test::More;
+use Test::Exception;
 use Data::Dumper;
 
 use Matrix;
@@ -293,8 +294,10 @@ subtest 'binary_op method - edge cases' => sub {
     my $v = Vector->new( size => 3, data => [1, 2, 3] );
 
     # This might cause issues, but let's test the behavior
-    eval { $m->binary_op(sub { $_[0] + $_[1] }, $v) };
     # The behavior depends on implementation - might work or might error
+    # Using lives_ok to test that it doesn't die (if it should work)
+    # or dies_ok to test that it does die (if it should error)
+    lives_ok { $m->binary_op(sub { $_[0] + $_[1] }, $v) } 'binary_op with mismatched vector size should not die';
 };
 
 done_testing;

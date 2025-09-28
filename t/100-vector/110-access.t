@@ -2,6 +2,7 @@ use v5.40;
 use experimental qw[ class ];
 
 use Test::More;
+use Test::Exception;
 use Data::Dumper;
 
 use Vector;
@@ -29,11 +30,9 @@ subtest 'at method - edge cases and error conditions' => sub {
     my $v = Vector->new( size => 2, data => [ 1, 2 ] );
 
     # Test accessing out of bounds (should return undef or cause error)
-    eval { $v->at(2) };
-    ok( $@, 'at(2) on size-2 vector should cause error' );
+    throws_ok { $v->at(2) } qr//, 'at(2) on size-2 vector should cause error';
 
-    eval { $v->at(-1) };
-    ok( $@, 'at(-1) should cause error' );
+    throws_ok { $v->at(-1) } qr//, 'at(-1) should cause error';
 };
 
 subtest 'index_of method - finding element positions' => sub {

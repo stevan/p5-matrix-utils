@@ -71,6 +71,30 @@ class Matrix {
         )
     }
 
+    sub concat ($class, $a, $b) {
+        Carp::confess "Rows must be equal to concat (".($a->rows).") != (".($a->rows).")"
+            unless $a->rows == $b->rows;
+        my @shape = ($a->rows, $a->cols + $b->cols);
+        return $class->construct(
+            \@shape,
+            sub ($x, $y) {
+                ($y < $a->cols) ? $a->at($x, $y) : $b->at($x, ($y - $a->cols));
+            }
+        )
+    }
+
+    sub stack ($class, $a, $b) {
+        Carp::confess "Cols must be equal to stack (".($a->cols).") != (".($a->cols).")"
+            unless $a->cols == $b->cols;
+        my @shape = ($a->rows + $b->rows, $a->cols);
+        return $class->construct(
+            \@shape,
+            sub ($x, $y) {
+                ($x < $a->rows) ? $a->at($x, $y) : $b->at(($x - $a->rows), $y);
+            }
+        )
+    }
+
     # --------------------------------------------------------------------------
     # Matrix Type Static Constructors
     # --------------------------------------------------------------------------

@@ -2,6 +2,7 @@ use v5.40;
 use experimental qw[ class ];
 
 use Test::More;
+use Test::Exception;
 use Data::Dumper;
 
 use Matrix;
@@ -34,17 +35,13 @@ subtest 'at method - edge cases and error conditions' => sub {
     my $m = Matrix->new( shape => [2, 2], data => [1, 2, 3, 4] );
 
     # Test accessing out of bounds (should return undef or cause error)
-    eval { $m->at(2, 0) };
-    ok( $@, 'at(2,0) on 2x2 matrix should cause error' );
+    throws_ok { $m->at(2, 0) } qr//, 'at(2,0) on 2x2 matrix should cause error';
 
-    eval { $m->at(0, 2) };
-    ok( $@, 'at(0,2) on 2x2 matrix should cause error' );
+    throws_ok { $m->at(0, 2) } qr//, 'at(0,2) on 2x2 matrix should cause error';
 
-    eval { $m->at(-1, 0) };
-    ok( $@, 'at(-1,0) should cause error' );
+    throws_ok { $m->at(-1, 0) } qr//, 'at(-1,0) should cause error';
 
-    eval { $m->at(0, -1) };
-    ok( $@, 'at(0,-1) should cause error' );
+    throws_ok { $m->at(0, -1) } qr//, 'at(0,-1) should cause error';
 };
 
 subtest 'row_vector_at method - extracting row vectors' => sub {
