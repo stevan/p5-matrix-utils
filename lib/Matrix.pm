@@ -55,6 +55,11 @@ class Matrix {
         return $class->new( shape => [ @$shape ], data => $initial )
     }
 
+    sub ones  ($class, $shape) { $class->initialize($shape, 1) }
+    sub zeros ($class, $shape) { $class->initialize($shape, 0) }
+
+    # Build via f(x, y) ________________________________________________________
+
     sub construct ($class, $shape, $f) {
         my ($rows, $cols) = @$shape;
 
@@ -70,6 +75,8 @@ class Matrix {
             data  => \@new
         )
     }
+
+    # Building from others _____________________________________________________
 
     sub concat ($class, $a, $b) {
         Carp::confess "Rows must be equal to concat (".($a->rows).") != (".($a->rows).")"
@@ -95,9 +102,7 @@ class Matrix {
         )
     }
 
-    # --------------------------------------------------------------------------
-    # Matrix Type Static Constructors
-    # --------------------------------------------------------------------------
+    # Misc. Matrix Types _______________________________________________________
 
     sub eye ($class, $size) {
         return $class->new(
@@ -141,29 +146,43 @@ class Matrix {
     }
 
     # --------------------------------------------------------------------------
-    # Accessing Elements
+    # Accessing Elements & Groups of Elements
     # --------------------------------------------------------------------------
 
     method at ($x, $y) { $self->_slice( $self->index($x, $y) ) }
 
+    method row_at ($x) { $self->_slice( $self->row_indices($x) ) }
+    method col_at ($y) { $self->_slice( $self->col_indices($y) ) }
+
+    # TODO:
+    # - some way of accessing the main diagonal
+    #   - or with an offset
+    # - getting a random rectangle
+    # - getting a quadrant
+
+    # --------------------------------------------------------------------------
+    # Accessing Row/Col as Vectors
+    # --------------------------------------------------------------------------
+
     method row_vector_at ($x) {
-        return Vector->new(
-            size => $self->cols,
-            data => [ $self->_slice( $self->row_indices($x) ) ],
-        )
+        return Vector->new(size => $self->cols, data => [ $self->row_at($x) ]);
     }
 
     method col_vector_at ($y) {
-        return Vector->new(
-            size => $self->rows,
-            data => [ $self->_slice( $self->col_indices($y) ) ],
-        )
+        return Vector->new(size => $self->rows, data => [ $self->col_at($y) ]);
     }
 
     # --------------------------------------------------------------------------
     # Moving elements
     # --------------------------------------------------------------------------
 
+    # API IDEA:
+    # The $wrap arg default is false, but if true, the
+    # - shift_cols( $by, $wrap ) where $by is + (go right), and - (go left)
+    # - shift_rows( $by, $wrap ) where $by is + (go down), and - (go up)
+    # - shift( $by, $direction ) where $dir = N,S,E,W along with NE, NW, etc.
+
+    # rename to shift_cols
     method shift_horz ($by) {
         $by = -$by;
 
@@ -177,6 +196,12 @@ class Matrix {
         )
     }
 
+    # TODO:
+    # - add shift_vert
+    # - or add shift( $dir, $by ) where $dir = N,S,E,W along with NE, NW, etc.
+    #      - could represent the entire shift with a 3x3
+
+    # FIXME: this is a poor name, fix it ...
     method copy_row ($from, $to) {
         return __CLASS__->construct(
             $self->copy_shape,
@@ -187,8 +212,45 @@ class Matrix {
         )
     }
 
+    # TODO:
+    # - copy_column
+    # - probably some others, can't think of any specific ones atm.
+
     # --------------------------------------------------------------------------
-    # Generic Operations
+    # Matrix Multiplication
+    # --------------------------------------------------------------------------
+
+    method matrix_multiply ($other) {
+        # Matrix × Vector: Matrix (m×n) × Vector (n) = Vector (m)
+        if ($other isa Vector) {
+            return Vector->new(
+                size => $self->rows,
+                data => [ map { $self->row_vector_at($_)->dot_product($other) } 0 .. ($self->rows - 1) ]
+            );
+        }
+
+        # Matrix × Matrix: Matrix (m×n) × Matrix (n×p) = Matrix (m×p)
+        return __CLASS__->construct(
+            [ $self->rows, $other->cols ],
+            sub ($x, $y) {
+                $self->row_vector_at($x)
+                        ->dot_product($other->col_vector_at($y));
+            }
+        )
+    }
+
+    # --------------------------------------------------------------------------
+    # Reductions (scalar results)
+    # --------------------------------------------------------------------------
+
+    method reduce ($f, $initial) {
+        return List::Util::reduce { $f->($a, $b) } $initial, @$data
+    }
+
+    method sum { $self->reduce(\&Operations::add, 0) }
+
+    # --------------------------------------------------------------------------
+    # Element-Wise Operations
     # --------------------------------------------------------------------------
 
     method unary_op ($f) {
@@ -215,40 +277,26 @@ class Matrix {
         )
     }
 
-    # --------------------------------------------------------------------------
     # Math Operations
-    # --------------------------------------------------------------------------
-
     method neg { $self->unary_op(\&Operations::neg) }
 
-    method add ($other, @) { $self->binary_op(\&Operations::add, $other) }
-    method sub ($other, @) { $self->binary_op(\&Operations::sub, $other) }
-    method mul ($other, @) { $self->binary_op(\&Operations::mul, $other) }
-    method div ($other, @) { $self->binary_op(\&Operations::div, $other) }
-    method mod ($other, @) { $self->binary_op(\&Operations::mod, $other) }
+    method add ($other) { $self->binary_op(\&Operations::add, $other) }
+    method sub ($other) { $self->binary_op(\&Operations::sub, $other) }
+    method mul ($other) { $self->binary_op(\&Operations::mul, $other) }
+    method div ($other) { $self->binary_op(\&Operations::div, $other) }
+    method mod ($other) { $self->binary_op(\&Operations::mod, $other) }
 
-    # --------------------------------------------------------------------------
-    # Matrix Multiplication
-    # --------------------------------------------------------------------------
+    # Comparison Operations
+    method eq  ($other) { $self->binary_op(\&Operations::eq,  $other) }
+    method ne  ($other) { $self->binary_op(\&Operations::ne,  $other) }
+    method lt  ($other) { $self->binary_op(\&Operations::lt,  $other) }
+    method le  ($other) { $self->binary_op(\&Operations::lt,  $other) }
+    method gt  ($other) { $self->binary_op(\&Operations::gt,  $other) }
+    method ge  ($other) { $self->binary_op(\&Operations::ge,  $other) }
+    method cmp ($other) { $self->binary_op(\&Operations::cmp, $other) }
 
-    method matrix_multiply ($other) {
-        # Matrix × Vector: Matrix (m×n) × Vector (n) = Vector (m)
-        if ($other isa Vector) {
-            return Vector->new(
-                size => $self->rows,
-                data => [ map { $self->row_vector_at($_)->dot_product($other) } 0 .. ($self->rows - 1) ]
-            );
-        }
-
-        # Matrix × Matrix: Matrix (m×n) × Matrix (n×p) = Matrix (m×p)
-        return __CLASS__->construct(
-            [ $self->rows, $other->cols ],
-            sub ($x, $y) {
-                $self->row_vector_at($x)
-                        ->dot_product($other->col_vector_at($y));
-            }
-        )
-    }
+    # Logicical Operations
+    method not { $self->unary_op(\&Operations::not) }
 
     # --------------------------------------------------------------------------
 

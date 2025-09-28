@@ -65,17 +65,6 @@ class Vector {
     }
 
     # --------------------------------------------------------------------------
-    # scalar results
-    # --------------------------------------------------------------------------
-
-    method sum { $self->reduce(\&Operations::add, 0) }
-
-    method dot_product ($other) {
-        my $i = 0;
-        return $self->reduce(sub ($acc, $x) { $acc + ($x * $other->at($i++)) }, 0)
-    }
-
-    # --------------------------------------------------------------------------
     # Matrix multiplication
     # --------------------------------------------------------------------------
 
@@ -87,12 +76,23 @@ class Vector {
     }
 
     # --------------------------------------------------------------------------
-    # generic operations on data
+    # Reductions (scalar results)
     # --------------------------------------------------------------------------
 
     method reduce ($f, $initial) {
         return List::Util::reduce { $f->($a, $b) } $initial, @$data
     }
+
+    method sum { $self->reduce(\&Operations::add, 0) }
+
+    method dot_product ($other) {
+        my $i = 0;
+        return $self->reduce(sub ($acc, $x) { $acc + ($x * $other->at($i++)) }, 0)
+    }
+
+    # --------------------------------------------------------------------------
+    # Element-Wise Operations
+    # --------------------------------------------------------------------------
 
     method unary_op ($f) {
         return Vector->new(
@@ -113,17 +113,26 @@ class Vector {
         )
     }
 
-    # --------------------------------------------------------------------------
-    # math operations
-    # --------------------------------------------------------------------------
-
+    # Math Operations
     method neg { $self->unary_op(\&Operations::neg) }
 
-    method add ($other, @) { $self->binary_op(\&Operations::add, $other) }
-    method sub ($other, @) { $self->binary_op(\&Operations::sub, $other) }
-    method mul ($other, @) { $self->binary_op(\&Operations::mul, $other) }
-    method div ($other, @) { $self->binary_op(\&Operations::div, $other) }
-    method mod ($other, @) { $self->binary_op(\&Operations::mod, $other) }
+    method add ($other) { $self->binary_op(\&Operations::add, $other) }
+    method sub ($other) { $self->binary_op(\&Operations::sub, $other) }
+    method mul ($other) { $self->binary_op(\&Operations::mul, $other) }
+    method div ($other) { $self->binary_op(\&Operations::div, $other) }
+    method mod ($other) { $self->binary_op(\&Operations::mod, $other) }
+
+    # Comparison Operations
+    method eq  ($other) { $self->binary_op(\&Operations::eq,  $other) }
+    method ne  ($other) { $self->binary_op(\&Operations::ne,  $other) }
+    method lt  ($other) { $self->binary_op(\&Operations::lt,  $other) }
+    method le  ($other) { $self->binary_op(\&Operations::lt,  $other) }
+    method gt  ($other) { $self->binary_op(\&Operations::gt,  $other) }
+    method ge  ($other) { $self->binary_op(\&Operations::ge,  $other) }
+    method cmp ($other) { $self->binary_op(\&Operations::cmp, $other) }
+
+    # Logicical Operations
+    method not { $self->unary_op(\&Operations::not) }
 
     # --------------------------------------------------------------------------
 
