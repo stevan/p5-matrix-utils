@@ -5,15 +5,11 @@ use experimental qw[ class ];
 use Carp;
 use List::Util;
 
+use AbstractTensor;
 use Vector;
 use Operations;
 
-class Matrix {
-    use overload (
-        %Operations::OVERLOADS,
-        '""' => 'to_string',
-    );
-
+class Matrix :isa(AbstractTensor) {
     field $shape :param :reader;
     field $data  :param :reader;
 
@@ -58,13 +54,6 @@ class Matrix {
 
     sub initialize ($class, $shape, $initial) {
         return $class->new( shape => [ @$shape ], data => $initial )
-    }
-
-    sub ones  ($class, $shape) { $class->initialize($shape, 1) }
-    sub zeros ($class, $shape) { $class->initialize($shape, 0) }
-
-    sub square ($class, $size, $initial=0) {
-        $class->initialize([ $size, $size ], $initial)
     }
 
     # Build via f(x, y) ________________________________________________________
@@ -112,6 +101,10 @@ class Matrix {
     }
 
     # Misc. Matrix Types _______________________________________________________
+
+    sub square ($class, $size, $initial=0) {
+        $class->initialize([ $size, $size ], $initial)
+    }
 
     sub eye ($class, $size) {
         return $class->new(
@@ -251,6 +244,9 @@ class Matrix {
     # --------------------------------------------------------------------------
     # Reductions (scalar results)
     # --------------------------------------------------------------------------
+    # FIXME:
+    # these access data directly, which they should not!
+
 
     method reduce ($f, $initial) {
         return List::Util::reduce { $f->($a, $b) } $initial, @$data
@@ -288,38 +284,6 @@ class Matrix {
             sub ($x, $y) { $f->( $self->at($x, $y), $other->at($x, $y) ) }
         )
     }
-
-    # Math Operations
-    method neg { $self->unary_op(\&Operations::neg) }
-
-    method add ($other) { $self->binary_op(\&Operations::add, $other) }
-    method sub ($other) { $self->binary_op(\&Operations::sub, $other) }
-    method mul ($other) { $self->binary_op(\&Operations::mul, $other) }
-    method div ($other) { $self->binary_op(\&Operations::div, $other) }
-    method mod ($other) { $self->binary_op(\&Operations::mod, $other) }
-
-    # Comparison Operations
-    method eq  ($other) { $self->binary_op(\&Operations::eq,  $other) }
-    method ne  ($other) { $self->binary_op(\&Operations::ne,  $other) }
-    method lt  ($other) { $self->binary_op(\&Operations::lt,  $other) }
-    method le  ($other) { $self->binary_op(\&Operations::le,  $other) }
-    method gt  ($other) { $self->binary_op(\&Operations::gt,  $other) }
-    method ge  ($other) { $self->binary_op(\&Operations::ge,  $other) }
-    method cmp ($other) { $self->binary_op(\&Operations::cmp, $other) }
-
-    # Logicical Operations
-    method not { $self->unary_op(\&Operations::not) }
-
-    # Misc. Operations
-    method min ($other) { $self->binary_op(\&Operations::min, $other) }
-    method max ($other) { $self->binary_op(\&Operations::max, $other) }
-
-    method trunc { $self->unary_op(\&Operations::trunc) }
-    method fract { $self->unary_op(\&Operations::fract) }
-    # FIXME: stupid namespace collisions!
-    #method floor { $self->unary_op(\&Operations::floor) }
-    #method ceil  { $self->unary_op(\&Operations::ceil)  }
-    method abs   { $self->unary_op(\&Operations::abs)   }
 
     # --------------------------------------------------------------------------
 

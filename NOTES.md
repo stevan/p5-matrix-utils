@@ -1,5 +1,6 @@
 # NOTES:
 
+https://ianparberry.com/art/ascii/color/
 
 ## IDEAS
 

@@ -14,10 +14,8 @@ use Vector;
 
 use Matrix::TransitionMatrix;
 
-
-
-my $m1 = Matrix->initialize([ 3, 3 ], 1);
-my $m2 = Matrix->initialize([ 3, 3 ], 0);
+my $m1 = Matrix->sequence([ 3, 3 ], 9);
+my $m2 = Matrix->sequence([ 3, 3 ], 9, 10);
 my $m3 = Matrix->concat( $m1, $m2 );
 
 say "M1:";
