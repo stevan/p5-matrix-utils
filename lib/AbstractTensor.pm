@@ -2,9 +2,14 @@
 use v5.40;
 use experimental qw[ class ];
 
-class AbstractTensor {
-    use List::Util qw[ reduce ];
+use List::Util;
 
+class AbstractTensor {
+    # --------------------------------------------------------------------------
+    # Overloads
+    # --------------------------------------------------------------------------
+    # NOTE: these might get annoying, might wanna remove the,
+    # --------------------------------------------------------------------------
     use overload (
         '+'   => sub ($a, $b, @) { $a->add($b) },
         '-'   => sub ($a, $b, $swap) { $swap ? $a->neg : $a->sub($b) },
@@ -34,6 +39,10 @@ class AbstractTensor {
         '""' => 'to_string',
     );
 
+    # --------------------------------------------------------------------------
+    # Internal data array implementation
+    # --------------------------------------------------------------------------
+
     field $shape :param :reader;
     field $data  :param :reader;
 
@@ -43,7 +52,9 @@ class AbstractTensor {
             if scalar @$data != $self->size;
     }
 
-    ## -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # Access to the internal data array
+    # --------------------------------------------------------------------------
 
     method to_list { return @$data }
 
@@ -64,10 +75,26 @@ class AbstractTensor {
         return List::Util::reduce { $f->($a, $b) } $initial, @$data
     }
 
-    ## -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # Abstract Constructors & Methods
+    # --------------------------------------------------------------------------
 
     sub initialize; # ($class, $shape, data[] | scalar $initial)
     sub construct;  # ($class, $shape, $f)
+
+    method rank;
+    method size;
+
+    method index; # (@coords) -> index
+
+    method unary_op;  # ($f)         -> tensor
+    method binary_op; # ($f, $other) -> tensor
+
+    method to_string;
+
+    # --------------------------------------------------------------------------
+    # Static Constructors
+    # --------------------------------------------------------------------------
 
     sub ones  ($class, $shape) { $class->initialize($shape, 1) }
     sub zeros ($class, $shape) { $class->initialize($shape, 0) }
@@ -76,21 +103,11 @@ class AbstractTensor {
         $class->initialize([ @$shape ], [ $offset .. ($offset + ($size - 1)) ]);
     }
 
-    ## -------------------------------------------------------------------------
-
-    method rank;
-    method size;
-
-    ## -------------------------------------------------------------------------
-
-    method index; # (@coords) -> index
+    # --------------------------------------------------------------------------
+    # Element Access
+    # --------------------------------------------------------------------------
 
     method at (@coords) { $self->index_data_array( $self->index(@coords) ) }
-
-    ## -------------------------------------------------------------------------
-
-    method unary_op;  # ($f)         -> tensor
-    method binary_op; # ($f, $other) -> tensor
 
     ## -------------------------------------------------------------------------
     ## Math operations
@@ -144,8 +161,6 @@ class AbstractTensor {
     method max ($other) { $self->binary_op(\&AbstractTensor::Ops::max, $other) }
 
     ## -------------------------------------------------------------------------
-
-    method to_string;
 }
 
 

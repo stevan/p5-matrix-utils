@@ -18,7 +18,7 @@ package Toys::Shader::Color {
 }
 
 package Toys::Shader::Palettes {
-    use constant WebSafe => Matrix->new(shape => [ 6, 36 ], data  => [ 16 .. 231 ]);
+    use constant WebSafe => Matrix->initialize([ 6, 36 ], [ 16 .. 231 ]);
 }
 
 class Toys::Shader {

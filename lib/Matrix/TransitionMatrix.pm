@@ -28,6 +28,6 @@ class Matrix::TransitionMatrix::StateVector :isa(Vector) {
     sub create ($class, $steps, $initial_state = 0) {
         my @new  = (0) x $steps;
         $new[$initial_state] = 1;
-        return $class->new( shape => [ $steps ], data => \@new )
+        return $class->initialize( $steps, \@new )
     }
 }

@@ -3,7 +3,6 @@ use v5.40;
 use experimental qw[ class ];
 
 use Carp;
-use List::Util;
 
 use AbstractTensor;
 use Vector;
@@ -46,10 +45,7 @@ class Matrix :isa(AbstractTensor) {
             }
         }
 
-        return $class->new(
-            shape => [ @$shape ],
-            data  => \@new
-        )
+        return $class->initialize([ @$shape ], \@new)
     }
 
     # Building from others _____________________________________________________
@@ -85,9 +81,9 @@ class Matrix :isa(AbstractTensor) {
     }
 
     sub eye ($class, $size) {
-        return $class->new(
-            shape => [ $size, $size ],
-            data  => [ map { (0) x ($_ - 1), 1, (0) x ($size - $_) } 1 .. $size ]
+        return $class->initialize(
+            [ $size, $size ],
+            [ map { (0) x ($_ - 1), 1, (0) x ($size - $_) } 1 .. $size ]
         )
     }
 
@@ -99,10 +95,7 @@ class Matrix :isa(AbstractTensor) {
             $new[$x * $size + $x] = $vector->at($x);
         }
 
-        return $class->new(
-            shape => [ $size, $size ],
-            data  => \@new
-        );
+        return $class->initialize( [ $size, $size ], \@new );
     }
 
     # --------------------------------------------------------------------------

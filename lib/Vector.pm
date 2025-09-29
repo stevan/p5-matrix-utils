@@ -3,7 +3,6 @@ use v5.40;
 use experimental qw[ class ];
 
 use Carp;
-use List::Util;
 
 use AbstractTensor;
 
