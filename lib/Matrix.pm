@@ -7,7 +7,6 @@ use List::Util;
 
 use AbstractTensor;
 use Vector;
-use Operations;
 
 class Matrix :isa(AbstractTensor) {
     field $shape :param :reader;
@@ -252,10 +251,10 @@ class Matrix :isa(AbstractTensor) {
         return List::Util::reduce { $f->($a, $b) } $initial, @$data
     }
 
-    method sum { $self->reduce(\&Operations::add, 0) }
+    method sum { $self->reduce(\&AbstractTensor::Ops::add, 0) }
 
-    method min_value { $self->reduce(\&Operations::min, $data->[0]) }
-    method max_value { $self->reduce(\&Operations::max, $data->[0]) }
+    method min_value { $self->reduce(\&AbstractTensor::Ops::min, $data->[0]) }
+    method max_value { $self->reduce(\&AbstractTensor::Ops::max, $data->[0]) }
 
     # --------------------------------------------------------------------------
     # Element-Wise Operations

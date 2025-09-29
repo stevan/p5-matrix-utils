@@ -2,18 +2,18 @@
 use v5.40;
 use experimental qw[ class ];
 
-use Operations;
+use AbstractTensor;
 
 use Time::HiRes qw[ time sleep ];
 
 package Toys::Shader::Color {
     sub websafe ($pixel, $c) {
-        sprintf "\e[48;5;%dm%s\e[0m" => Operations::clamp(0, 216, $c), $pixel
+        sprintf "\e[48;5;%dm%s\e[0m" => AbstractTensor::clamp(0, 216, $c), $pixel
     }
 
     sub rgb ($pixel, @color) {
         sprintf "\e[48;2;%s;%s;%sm%s\e[0m" =>
-            (map { Operations::clamp(0, 255, $_) } @color), $pixel
+            (map { AbstractTensor::clamp(0, 255, $_) } @color), $pixel
     }
 }
 

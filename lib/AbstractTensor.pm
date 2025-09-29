@@ -2,13 +2,35 @@
 use v5.40;
 use experimental qw[ class ];
 
-use Operations;
-
 class AbstractTensor {
     use List::Util qw[ reduce ];
 
     use overload (
-        %Operations::OVERLOADS,
+        '+'   => sub ($a, $b, @) { $a->add($b) },
+        '-'   => sub ($a, $b, $swap) { $swap ? $a->neg : $a->sub($b) },
+        '*'   => sub ($a, $b, @) { $a->mul($b) },
+        '/'   => sub ($a, $b, @) { $a->div($b) },
+        '%'   => sub ($a, $b, @) { $a->mod($b) },
+        '**'  => sub ($a, $b, @) { $a->pow($b) },
+
+        '!'   => sub ($n, @)     { $n->not },
+        '=='  => sub ($n, $m, @) { $n->eq($m) },
+        '!='  => sub ($n, $m, @) { $n->ne($m) },
+        '<'   => sub ($n, $m, @) { $n->lt($m) },
+        '<='  => sub ($n, $m, @) { $n->le($m) },
+        '>'   => sub ($n, $m, @) { $n->gt($m) },
+        '>='  => sub ($n, $m, @) { $n->ge($m) },
+
+        '<=>' => sub ($n, $m, @) { $n->cmp($m) },
+
+        # TODO:
+        # - also atan2 cos sin exp abs log sqrt int
+        # - consider <> to do some kind of iteration hmmm, 🤔
+
+        # to be clear ...
+        'neg' => sub ($a, @) { $a->neg },
+
+        # to be visible 👀
         '""' => 'to_string',
     );
 
@@ -39,40 +61,127 @@ class AbstractTensor {
     method unary_op;  # ($f)         -> tensor
     method binary_op; # ($f, $other) -> tensor
 
-    # Math Operations
-    method neg { $self->unary_op(\&Operations::neg) }
+    ## -------------------------------------------------------------------------
+    ## Math operations
+    ## -------------------------------------------------------------------------
 
-    method add ($other) { $self->binary_op(\&Operations::add, $other) }
-    method sub ($other) { $self->binary_op(\&Operations::sub, $other) }
-    method mul ($other) { $self->binary_op(\&Operations::mul, $other) }
-    method div ($other) { $self->binary_op(\&Operations::div, $other) }
-    method mod ($other) { $self->binary_op(\&Operations::mod, $other) }
+    # unary
+    method neg { $self->unary_op(\&AbstractTensor::Ops::neg) }
+    method abs { $self->unary_op(\&AbstractTensor::Ops::abs) }
 
-    # Comparison Operations
-    method eq  ($other) { $self->binary_op(\&Operations::eq,  $other) }
-    method ne  ($other) { $self->binary_op(\&Operations::ne,  $other) }
-    method lt  ($other) { $self->binary_op(\&Operations::lt,  $other) }
-    method le  ($other) { $self->binary_op(\&Operations::le,  $other) }
-    method gt  ($other) { $self->binary_op(\&Operations::gt,  $other) }
-    method ge  ($other) { $self->binary_op(\&Operations::ge,  $other) }
-    method cmp ($other) { $self->binary_op(\&Operations::cmp, $other) }
+    # binary
+    method add ($other) { $self->binary_op(\&AbstractTensor::Ops::add, $other) }
+    method sub ($other) { $self->binary_op(\&AbstractTensor::Ops::sub, $other) }
+    method mul ($other) { $self->binary_op(\&AbstractTensor::Ops::mul, $other) }
+    method div ($other) { $self->binary_op(\&AbstractTensor::Ops::div, $other) }
+    method mod ($other) { $self->binary_op(\&AbstractTensor::Ops::mod, $other) }
+    method pow ($other) { $self->binary_op(\&AbstractTensor::Ops::pow, $other) }
 
-    # Logicical Operations
-    method not { $self->unary_op(\&Operations::not) }
+    ## -------------------------------------------------------------------------
+    ## Comparison Operations
+    ## -------------------------------------------------------------------------
 
-    # Misc. Operations
-    method min ($other) { $self->binary_op(\&Operations::min, $other) }
-    method max ($other) { $self->binary_op(\&Operations::max, $other) }
+    # binary
+    method eq  ($other) { $self->binary_op(\&AbstractTensor::Ops::eq,  $other) }
+    method ne  ($other) { $self->binary_op(\&AbstractTensor::Ops::ne,  $other) }
+    method lt  ($other) { $self->binary_op(\&AbstractTensor::Ops::lt,  $other) }
+    method le  ($other) { $self->binary_op(\&AbstractTensor::Ops::le,  $other) }
+    method gt  ($other) { $self->binary_op(\&AbstractTensor::Ops::gt,  $other) }
+    method ge  ($other) { $self->binary_op(\&AbstractTensor::Ops::ge,  $other) }
+    method cmp ($other) { $self->binary_op(\&AbstractTensor::Ops::cmp, $other) }
 
-    method trunc { $self->unary_op(\&Operations::trunc) }
-    method fract { $self->unary_op(\&Operations::fract) }
-    # FIXME: stupid namespace collisions!
-    #method floor { $self->unary_op(\&Operations::floor) }
-    #method ceil  { $self->unary_op(\&Operations::ceil)  }
-    method abs   { $self->unary_op(\&Operations::abs)   }
+    ## -------------------------------------------------------------------------
+    ## Logical Operations
+    ## -------------------------------------------------------------------------
+
+    method not { $self->unary_op(\&AbstractTensor::Ops::not) }
+    method and ($other) { $self->binary_op(\&AbstractTensor::Ops::and, $other) }
+    method or  ($other) { $self->binary_op(\&AbstractTensor::Ops::or, $other)  }
+
+    ## -------------------------------------------------------------------------
+    ## Numerical Operations
+    ## -------------------------------------------------------------------------
+
+    # unary
+    method trunc { $self->unary_op(\&AbstractTensor::Ops::trunc) }
+    method fract { $self->unary_op(\&AbstractTensor::Ops::fract) }
+    #method floor { $self->unary_op(\&AbstractTensor::Ops::floor) }
+    #method ceil  { $self->unary_op(\&AbstractTensor::Ops::ceil ) }
+
+    # binary
+    method min ($other) { $self->binary_op(\&AbstractTensor::Ops::min, $other) }
+    method max ($other) { $self->binary_op(\&AbstractTensor::Ops::max, $other) }
 
     ## -------------------------------------------------------------------------
 
     method to_string;
 }
+
+
+package AbstractTensor::Ops {
+    use v5.40;
+    no builtin;
+
+    ## -------------------------------------------------------------------------
+    ## Math operations
+    ## -------------------------------------------------------------------------
+
+    # unary
+    sub neg ($n)     { -$n }
+    sub abs ($n)     { abs($n) }
+
+    # binary
+    sub add ($n, $m) { $n + $m }
+    sub sub ($n, $m) { $n - $m }
+    sub mul ($n, $m) { $n * $m }
+    sub div ($n, $m) { $n / $m }
+    sub mod ($n, $m) { $n % $m }
+    sub pow ($n, $m) { $n ** $m }
+
+    ## -------------------------------------------------------------------------
+    ## Comparison Operations
+    ## -------------------------------------------------------------------------
+
+    # binary
+    sub eq  ($n, $m) { $n == $m ? 1 : 0 }
+    sub ne  ($n, $m) { $n != $m ? 1 : 0 }
+    sub lt  ($n, $m) { $n <  $m ? 1 : 0 }
+    sub le  ($n, $m) { $n <= $m ? 1 : 0 }
+    sub gt  ($n, $m) { $n >  $m ? 1 : 0 }
+    sub ge  ($n, $m) { $n >= $m ? 1 : 0 }
+
+    # binary
+    sub cmp ($n, $m) { $n <=> $m }
+
+    ## -------------------------------------------------------------------------
+    ## Logical Operations
+    ## -------------------------------------------------------------------------
+
+    sub not ($n) { !$n ? 1 : 0 }
+    sub and ($n, $m) { $n && $m ? 1 : 0 }
+    sub or  ($n, $m) { $n || $m ? 1 : 0 }
+
+    ## -------------------------------------------------------------------------
+    ## Numerical Operations
+    ## -------------------------------------------------------------------------
+
+    # unary
+    sub trunc ($n) { int($n) }
+    sub fract ($n) { int($n) - $n }
+
+    #sub floor ($n) { use builtin qw[ floor ]; floor($n) }
+    #sub ceil  ($n) { use builtin qw[ ceil  ]; ceil($n) }
+
+    # binary
+    sub min ($n, $m) { $n < $m ? $n : $m }
+    sub max ($n, $m) { $n > $m ? $n : $m }
+
+    # ternary
+    sub clamp ($min, $max, $n) { max($min, min($max, $n)) }
+
+}
+
+
+
+
 

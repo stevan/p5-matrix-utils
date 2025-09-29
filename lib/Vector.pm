@@ -6,7 +6,6 @@ use Carp;
 use List::Util;
 
 use AbstractTensor;
-use Operations;
 
 class Vector :isa(AbstractTensor) {
     field $size :param :reader;
@@ -81,10 +80,10 @@ class Vector :isa(AbstractTensor) {
         return List::Util::reduce { $f->($a, $b) } $initial, @$data
     }
 
-    method sum { $self->reduce(\&Operations::add, 0) }
+    method sum { $self->reduce(\&AbstractTensor::Ops::add, 0) }
 
-    method min_value { $self->reduce(\&Operations::min, $data->[0]) }
-    method max_value { $self->reduce(\&Operations::max, $data->[0]) }
+    method min_value { $self->reduce(\&AbstractTensor::Ops::min, $data->[0]) }
+    method max_value { $self->reduce(\&AbstractTensor::Ops::max, $data->[0]) }
 
     method dot_product ($other) {
         my $i = 0;
