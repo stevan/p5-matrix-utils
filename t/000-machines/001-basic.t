@@ -21,7 +21,7 @@ class Machine::Stepper {
     field $trans :reader;
 
     ADJUST {
-        $trans = Matrix::TransitionMatrix->initialize($steps);
+        $trans = Matrix::TransitionMatrix->create($steps);
         $trans = $trans->copy_row(0, $steps) if $looping;
     }
 

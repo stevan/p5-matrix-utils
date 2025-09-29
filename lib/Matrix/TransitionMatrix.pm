@@ -9,14 +9,14 @@ use Vector;
 
 class Matrix::TransitionMatrix :isa(Matrix) {
 
-    sub initialize ($class, $steps, $loop = undef) {
+    sub create ($class, $steps, $loop = undef) {
         return $class->eye($steps + 1)->shift_horz(1);
     }
 
     method steps { $self->width }
 
     method intitial_state_vector {
-        Matrix::TransitionMatrix::StateVector->initialize( $self->cols, 0 )
+        Matrix::TransitionMatrix::StateVector->create( $self->cols, 0 )
     }
 
     method transition ($state) {
@@ -25,7 +25,7 @@ class Matrix::TransitionMatrix :isa(Matrix) {
 }
 
 class Matrix::TransitionMatrix::StateVector :isa(Vector) {
-    sub initialize ($class, $steps, $initial_state = 0) {
+    sub create ($class, $steps, $initial_state = 0) {
         my @new  = (0) x $steps;
         $new[$initial_state] = 1;
         return $class->new( size => $steps, data => \@new )

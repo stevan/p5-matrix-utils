@@ -6,10 +6,10 @@ use Data::Dumper;
 
 use Matrix::TransitionMatrix;
 
-subtest 'TransitionMatrix initialize method - basic initialization' => sub {
-    my $tm = Matrix::TransitionMatrix->initialize(3);
+subtest 'TransitionMatrix create method - basic initialization' => sub {
+    my $tm = Matrix::TransitionMatrix->create(3);
 
-    isa_ok( $tm, 'Matrix::TransitionMatrix', 'initialize returns a TransitionMatrix' );
+    isa_ok( $tm, 'Matrix::TransitionMatrix', 'create returns a TransitionMatrix' );
     isa_ok( $tm, 'Matrix', 'TransitionMatrix isa Matrix' );
     is( $tm->rows, 4, 'matrix has correct number of rows (steps + 1)' );
     is( $tm->cols, 4, 'matrix has correct number of columns (steps + 1)' );
@@ -42,10 +42,10 @@ subtest 'TransitionMatrix initialize method - basic initialization' => sub {
     is( $tm->at(3, 3), 0, 'element at (3,3) is 0' );
 };
 
-subtest 'TransitionMatrix initialize method - different step counts' => sub {
+subtest 'TransitionMatrix create method - different step counts' => sub {
     # Test with 1 step
-    my $tm1 = Matrix::TransitionMatrix->initialize(1);
-    isa_ok( $tm1, 'Matrix::TransitionMatrix', 'initialize(1) returns a TransitionMatrix' );
+    my $tm1 = Matrix::TransitionMatrix->create(1);
+    isa_ok( $tm1, 'Matrix::TransitionMatrix', 'create(1) returns a TransitionMatrix' );
     is( $tm1->rows, 2, '1 step matrix has 2 rows' );
     is( $tm1->cols, 2, '1 step matrix has 2 columns' );
 
@@ -58,8 +58,8 @@ subtest 'TransitionMatrix initialize method - different step counts' => sub {
     is( $tm1->at(1, 1), 0, 'element at (1,1) is 0' );
 
     # Test with 5 steps
-    my $tm5 = Matrix::TransitionMatrix->initialize(5);
-    isa_ok( $tm5, 'Matrix::TransitionMatrix', 'initialize(5) returns a TransitionMatrix' );
+    my $tm5 = Matrix::TransitionMatrix->create(5);
+    isa_ok( $tm5, 'Matrix::TransitionMatrix', 'create(5) returns a TransitionMatrix' );
     is( $tm5->rows, 6, '5 step matrix has 6 rows' );
     is( $tm5->cols, 6, '5 step matrix has 6 columns' );
 
@@ -72,18 +72,18 @@ subtest 'TransitionMatrix initialize method - different step counts' => sub {
 };
 
 subtest 'TransitionMatrix steps method' => sub {
-    my $tm3 = Matrix::TransitionMatrix->initialize(3);
+    my $tm3 = Matrix::TransitionMatrix->create(3);
     is( $tm3->steps, 3, 'steps method returns correct number of steps' );
 
-    my $tm7 = Matrix::TransitionMatrix->initialize(7);
+    my $tm7 = Matrix::TransitionMatrix->create(7);
     is( $tm7->steps, 7, 'steps method returns correct number of steps for larger matrix' );
 
-    my $tm1 = Matrix::TransitionMatrix->initialize(1);
+    my $tm1 = Matrix::TransitionMatrix->create(1);
     is( $tm1->steps, 1, 'steps method returns correct number of steps for small matrix' );
 };
 
 subtest 'TransitionMatrix intitial_state_vector method' => sub {
-    my $tm = Matrix::TransitionMatrix->initialize(3);
+    my $tm = Matrix::TransitionMatrix->create(3);
     my $state = $tm->intitial_state_vector;
 
     isa_ok( $state, 'Matrix::TransitionMatrix::StateVector', 'intitial_state_vector returns a StateVector' );
@@ -97,10 +97,10 @@ subtest 'TransitionMatrix intitial_state_vector method' => sub {
     is( $state->at(3), 0, 'initial state at position 3 is 0' );
 };
 
-subtest 'StateVector initialize method - basic initialization' => sub {
-    my $state = Matrix::TransitionMatrix::StateVector->initialize(4, 0);
+subtest 'StateVector create method - basic initialization' => sub {
+    my $state = Matrix::TransitionMatrix::StateVector->create(4, 0);
 
-    isa_ok( $state, 'Matrix::TransitionMatrix::StateVector', 'StateVector initialize returns a StateVector' );
+    isa_ok( $state, 'Matrix::TransitionMatrix::StateVector', 'StateVector create returns a StateVector' );
     isa_ok( $state, 'Vector', 'StateVector isa Vector' );
     is( $state->size, 4, 'state vector has correct size' );
 
@@ -111,11 +111,11 @@ subtest 'StateVector initialize method - basic initialization' => sub {
     is( $state->at(3), 0, 'state at position 3 is 0' );
 };
 
-subtest 'StateVector initialize method - different initial states' => sub {
+subtest 'StateVector create method - different initial states' => sub {
     # Test with initial state 1
-    my $state1 = Matrix::TransitionMatrix::StateVector->initialize(4, 1);
+    my $state1 = Matrix::TransitionMatrix::StateVector->create(4, 1);
 
-    isa_ok( $state1, 'Matrix::TransitionMatrix::StateVector', 'StateVector initialize returns a StateVector' );
+    isa_ok( $state1, 'Matrix::TransitionMatrix::StateVector', 'StateVector create returns a StateVector' );
     is( $state1->size, 4, 'state vector has correct size' );
 
     # Check initial state is [0, 1, 0, 0] (state 1 is active)
@@ -125,7 +125,7 @@ subtest 'StateVector initialize method - different initial states' => sub {
     is( $state1->at(3), 0, 'state at position 3 is 0' );
 
     # Test with initial state 2
-    my $state2 = Matrix::TransitionMatrix::StateVector->initialize(4, 2);
+    my $state2 = Matrix::TransitionMatrix::StateVector->create(4, 2);
 
     # Check initial state is [0, 0, 1, 0] (state 2 is active)
     is( $state2->at(0), 0, 'state at position 0 is 0' );
@@ -134,7 +134,7 @@ subtest 'StateVector initialize method - different initial states' => sub {
     is( $state2->at(3), 0, 'state at position 3 is 0' );
 
     # Test with initial state 3 (last state)
-    my $state3 = Matrix::TransitionMatrix::StateVector->initialize(4, 3);
+    my $state3 = Matrix::TransitionMatrix::StateVector->create(4, 3);
 
     # Check initial state is [0, 0, 0, 1] (state 3 is active)
     is( $state3->at(0), 0, 'state at position 0 is 0' );
@@ -143,15 +143,15 @@ subtest 'StateVector initialize method - different initial states' => sub {
     is( $state3->at(3), 1, 'state at position 3 is 1' );
 };
 
-subtest 'StateVector initialize method - different sizes' => sub {
+subtest 'StateVector create method - different sizes' => sub {
     # Test with 2 states
-    my $state2 = Matrix::TransitionMatrix::StateVector->initialize(2, 0);
+    my $state2 = Matrix::TransitionMatrix::StateVector->create(2, 0);
     is( $state2->size, 2, '2-state vector has correct size' );
     is( $state2->at(0), 1, 'state at position 0 is 1' );
     is( $state2->at(1), 0, 'state at position 1 is 0' );
 
     # Test with 6 states
-    my $state6 = Matrix::TransitionMatrix::StateVector->initialize(6, 3);
+    my $state6 = Matrix::TransitionMatrix::StateVector->create(6, 3);
     is( $state6->size, 6, '6-state vector has correct size' );
     is( $state6->at(3), 1, 'state at position 3 is 1' );
     for my $i (0..5) {
@@ -161,7 +161,7 @@ subtest 'StateVector initialize method - different sizes' => sub {
 };
 
 subtest 'TransitionMatrix transition method - basic transitions' => sub {
-    my $tm = Matrix::TransitionMatrix->initialize(3);
+    my $tm = Matrix::TransitionMatrix->create(3);
     my $initial_state = $tm->intitial_state_vector;
 
     # Test transition from initial state [1, 0, 0, 0]
@@ -178,7 +178,7 @@ subtest 'TransitionMatrix transition method - basic transitions' => sub {
 };
 
 subtest 'TransitionMatrix transition method - multiple transitions' => sub {
-    my $tm = Matrix::TransitionMatrix->initialize(3);
+    my $tm = Matrix::TransitionMatrix->create(3);
     my $state = $tm->intitial_state_vector;
 
     # First transition: [1, 0, 0, 0] -> [0, 1, 0, 0]
@@ -211,10 +211,10 @@ subtest 'TransitionMatrix transition method - multiple transitions' => sub {
 };
 
 subtest 'TransitionMatrix transition method - with different initial states' => sub {
-    my $tm = Matrix::TransitionMatrix->initialize(3);
+    my $tm = Matrix::TransitionMatrix->create(3);
 
     # Test starting from state 1
-    my $state1 = Matrix::TransitionMatrix::StateVector->initialize(4, 1);
+    my $state1 = Matrix::TransitionMatrix::StateVector->create(4, 1);
     my $next_state1 = $tm->transition($state1);
 
     # Should transition from [0, 1, 0, 0] to [0, 0, 1, 0]
@@ -224,7 +224,7 @@ subtest 'TransitionMatrix transition method - with different initial states' => 
     is( $next_state1->at(3), 0, 'from state 1: state at position 3 is 0' );
 
     # Test starting from state 2
-    my $state2 = Matrix::TransitionMatrix::StateVector->initialize(4, 2);
+    my $state2 = Matrix::TransitionMatrix::StateVector->create(4, 2);
     my $next_state2 = $tm->transition($state2);
 
     # Should transition from [0, 0, 1, 0] to [0, 0, 0, 1]
@@ -235,10 +235,10 @@ subtest 'TransitionMatrix transition method - with different initial states' => 
 };
 
 subtest 'TransitionMatrix transition method - edge cases' => sub {
-    my $tm = Matrix::TransitionMatrix->initialize(1);
+    my $tm = Matrix::TransitionMatrix->create(1);
 
     # Test with single step transition matrix
-    my $state = Matrix::TransitionMatrix::StateVector->initialize(2, 0);
+    my $state = Matrix::TransitionMatrix::StateVector->create(2, 0);
     my $next_state = $tm->transition($state);
 
     # Should transition from [1, 0] to [0, 1]
@@ -252,7 +252,7 @@ subtest 'TransitionMatrix transition method - edge cases' => sub {
 };
 
 subtest 'TransitionMatrix integration test - complete state machine' => sub {
-    my $tm = Matrix::TransitionMatrix->initialize(4);
+    my $tm = Matrix::TransitionMatrix->create(4);
     my $state = $tm->intitial_state_vector;
 
     # Verify we start in state 0
