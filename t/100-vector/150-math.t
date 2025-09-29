@@ -6,10 +6,10 @@ use Data::Dumper;
 
 use Vector;
 
-my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
+my $vector = Vector->initialize(2, [ 1, 2 ] );
 
 subtest 'neg method - negation operation' => sub {
-    my $v = Vector->new( size => 3, data => [ 1, 2, 3 ] );
+    my $v = Vector->initialize(3, [ 1, 2, 3 ] );
     my $negated = $v->neg;
 
     isa_ok( $negated, 'Vector', 'neg returns a Vector' );
@@ -19,14 +19,14 @@ subtest 'neg method - negation operation' => sub {
     is( $negated->at(2), -3, 'third element negated' );
 
     # Test with negative numbers
-    my $v2 = Vector->new( size => 3, data => [ -1, -2, -3 ] );
+    my $v2 = Vector->initialize(3, [ -1, -2, -3 ] );
     my $negated2 = $v2->neg;
     is( $negated2->at(0), 1, 'negating negative gives positive' );
     is( $negated2->at(1), 2, 'negating negative gives positive' );
     is( $negated2->at(2), 3, 'negating negative gives positive' );
 
     # Test with mixed signs
-    my $v3 = Vector->new( size => 3, data => [ -1, 2, -3 ] );
+    my $v3 = Vector->initialize(3, [ -1, 2, -3 ] );
     my $negated3 = $v3->neg;
     is( $negated3->at(0), 1, 'negating -1 gives 1' );
     is( $negated3->at(1), -2, 'negating 2 gives -2' );
@@ -34,7 +34,7 @@ subtest 'neg method - negation operation' => sub {
 };
 
 subtest 'neg method - with floating point numbers' => sub {
-    my $v = Vector->new( size => 3, data => [ 1.5, -2.5, 3.14 ] );
+    my $v = Vector->initialize(3, [ 1.5, -2.5, 3.14 ] );
     my $negated = $v->neg;
 
     is( $negated->at(0), -1.5, 'negating 1.5 gives -1.5' );
@@ -43,7 +43,7 @@ subtest 'neg method - with floating point numbers' => sub {
 };
 
 subtest 'add method - with scalar values' => sub {
-    my $v = Vector->new( size => 3, data => [ 1, 2, 3 ] );
+    my $v = Vector->initialize(3, [ 1, 2, 3 ] );
 
     # Test addition with scalar
     my $added = $v->add(5);
@@ -67,8 +67,8 @@ subtest 'add method - with scalar values' => sub {
 };
 
 subtest 'add method - with another vector' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 1, 2, 3 ] );
-    my $v2 = Vector->new( size => 3, data => [ 4, 5, 6 ] );
+    my $v1 = Vector->initialize(3, [ 1, 2, 3 ] );
+    my $v2 = Vector->initialize(3, [ 4, 5, 6 ] );
 
     my $added = $v1->add($v2);
     isa_ok( $added, 'Vector', 'add returns a Vector' );
@@ -78,7 +78,7 @@ subtest 'add method - with another vector' => sub {
     is( $added->at(2), 9, 'third elements: 3 + 6 = 9' );
 
     # Test with negative numbers
-    my $v3 = Vector->new( size => 3, data => [ -1, -2, -3 ] );
+    my $v3 = Vector->initialize(3, [ -1, -2, -3 ] );
     my $added_neg = $v1->add($v3);
     is( $added_neg->at(0), 0, 'first elements: 1 + (-1) = 0' );
     is( $added_neg->at(1), 0, 'second elements: 2 + (-2) = 0' );
@@ -86,7 +86,7 @@ subtest 'add method - with another vector' => sub {
 };
 
 subtest 'sub method - with scalar values' => sub {
-    my $v = Vector->new( size => 3, data => [ 5, 10, 15 ] );
+    my $v = Vector->initialize(3, [ 5, 10, 15 ] );
 
     # Test subtraction with scalar
     my $subtracted = $v->sub(2);
@@ -104,8 +104,8 @@ subtest 'sub method - with scalar values' => sub {
 };
 
 subtest 'sub method - with another vector' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 10, 20, 30 ] );
-    my $v2 = Vector->new( size => 3, data => [ 3, 7, 12 ] );
+    my $v1 = Vector->initialize(3, [ 10, 20, 30 ] );
+    my $v2 = Vector->initialize(3, [ 3, 7, 12 ] );
 
     my $subtracted = $v1->sub($v2);
     isa_ok( $subtracted, 'Vector', 'sub returns a Vector' );
@@ -115,8 +115,8 @@ subtest 'sub method - with another vector' => sub {
     is( $subtracted->at(2), 18, 'third elements: 30 - 12 = 18' );
 
     # Test with negative result
-    my $v3 = Vector->new( size => 3, data => [ 1, 2, 3 ] );
-    my $v4 = Vector->new( size => 3, data => [ 5, 10, 15 ] );
+    my $v3 = Vector->initialize(3, [ 1, 2, 3 ] );
+    my $v4 = Vector->initialize(3, [ 5, 10, 15 ] );
     my $subtracted_neg = $v3->sub($v4);
     is( $subtracted_neg->at(0), -4, 'first elements: 1 - 5 = -4' );
     is( $subtracted_neg->at(1), -8, 'second elements: 2 - 10 = -8' );
@@ -124,7 +124,7 @@ subtest 'sub method - with another vector' => sub {
 };
 
 subtest 'mul method - with scalar values' => sub {
-    my $v = Vector->new( size => 3, data => [ 2, 3, 4 ] );
+    my $v = Vector->initialize(3, [ 2, 3, 4 ] );
 
     # Test multiplication with scalar
     my $multiplied = $v->mul(3);
@@ -148,8 +148,8 @@ subtest 'mul method - with scalar values' => sub {
 };
 
 subtest 'mul method - with another vector' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 2, 3, 4 ] );
-    my $v2 = Vector->new( size => 3, data => [ 5, 6, 7 ] );
+    my $v1 = Vector->initialize(3, [ 2, 3, 4 ] );
+    my $v2 = Vector->initialize(3, [ 5, 6, 7 ] );
 
     my $multiplied = $v1->mul($v2);
     isa_ok( $multiplied, 'Vector', 'mul returns a Vector' );
@@ -159,8 +159,8 @@ subtest 'mul method - with another vector' => sub {
     is( $multiplied->at(2), 28, 'third elements: 4 * 7 = 28' );
 
     # Test with negative numbers
-    my $v3 = Vector->new( size => 3, data => [ -1, 2, -3 ] );
-    my $v4 = Vector->new( size => 3, data => [ 4, -5, 6 ] );
+    my $v3 = Vector->initialize(3, [ -1, 2, -3 ] );
+    my $v4 = Vector->initialize(3, [ 4, -5, 6 ] );
     my $multiplied_neg = $v3->mul($v4);
     is( $multiplied_neg->at(0), -4, 'first elements: -1 * 4 = -4' );
     is( $multiplied_neg->at(1), -10, 'second elements: 2 * (-5) = -10' );
@@ -168,7 +168,7 @@ subtest 'mul method - with another vector' => sub {
 };
 
 subtest 'div method - with scalar values' => sub {
-    my $v = Vector->new( size => 3, data => [ 6, 9, 12 ] );
+    my $v = Vector->initialize(3, [ 6, 9, 12 ] );
 
     # Test division with scalar
     my $divided = $v->div(3);
@@ -186,8 +186,8 @@ subtest 'div method - with scalar values' => sub {
 };
 
 subtest 'div method - with another vector' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 12, 15, 18 ] );
-    my $v2 = Vector->new( size => 3, data => [ 3, 5, 6 ] );
+    my $v1 = Vector->initialize(3, [ 12, 15, 18 ] );
+    my $v2 = Vector->initialize(3, [ 3, 5, 6 ] );
 
     my $divided = $v1->div($v2);
     isa_ok( $divided, 'Vector', 'div returns a Vector' );
@@ -197,8 +197,8 @@ subtest 'div method - with another vector' => sub {
     is( $divided->at(2), 3, 'third elements: 18 / 6 = 3' );
 
     # Test with floating point result
-    my $v3 = Vector->new( size => 3, data => [ 7, 8, 9 ] );
-    my $v4 = Vector->new( size => 3, data => [ 2, 3, 4 ] );
+    my $v3 = Vector->initialize(3, [ 7, 8, 9 ] );
+    my $v4 = Vector->initialize(3, [ 2, 3, 4 ] );
     my $divided_float = $v3->div($v4);
     is( $divided_float->at(0), 3.5, 'first elements: 7 / 2 = 3.5' );
     is( $divided_float->at(1), 2.66666666666667, 'second elements: 8 / 3 ≈ 2.667' );
@@ -206,7 +206,7 @@ subtest 'div method - with another vector' => sub {
 };
 
 subtest 'mod method - with scalar values' => sub {
-    my $v = Vector->new( size => 3, data => [ 7, 10, 15 ] );
+    my $v = Vector->initialize(3, [ 7, 10, 15 ] );
 
     # Test modulo with scalar
     my $modded = $v->mod(3);
@@ -224,8 +224,8 @@ subtest 'mod method - with scalar values' => sub {
 };
 
 subtest 'mod method - with another vector' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 10, 15, 20 ] );
-    my $v2 = Vector->new( size => 3, data => [ 3, 4, 6 ] );
+    my $v1 = Vector->initialize(3, [ 10, 15, 20 ] );
+    my $v2 = Vector->initialize(3, [ 3, 4, 6 ] );
 
     my $modded = $v1->mod($v2);
     isa_ok( $modded, 'Vector', 'mod returns a Vector' );
@@ -235,8 +235,8 @@ subtest 'mod method - with another vector' => sub {
     is( $modded->at(2), 2, 'third elements: 20 % 6 = 2' );
 
     # Test with exact division (remainder 0)
-    my $v3 = Vector->new( size => 3, data => [ 12, 15, 18 ] );
-    my $v4 = Vector->new( size => 3, data => [ 3, 5, 6 ] );
+    my $v3 = Vector->initialize(3, [ 12, 15, 18 ] );
+    my $v4 = Vector->initialize(3, [ 3, 5, 6 ] );
     my $modded_zero = $v3->mod($v4);
     is( $modded_zero->at(0), 0, 'first elements: 12 % 3 = 0' );
     is( $modded_zero->at(1), 0, 'second elements: 15 % 5 = 0' );
@@ -244,8 +244,8 @@ subtest 'mod method - with another vector' => sub {
 };
 
 subtest 'math operations - with floating point numbers' => sub {
-    my $v1 = Vector->new( size => 2, data => [ 1.5, 2.5 ] );
-    my $v2 = Vector->new( size => 2, data => [ 0.5, 1.5 ] );
+    my $v1 = Vector->initialize(2, [ 1.5, 2.5 ] );
+    my $v2 = Vector->initialize(2, [ 0.5, 1.5 ] );
 
     # Test addition with floating point
     my $added = $v1->add($v2);
@@ -265,8 +265,8 @@ subtest 'math operations - with floating point numbers' => sub {
 
 subtest 'math operations - edge cases' => sub {
     # Test with zero vector
-    my $v = Vector->new( size => 3, data => [ 1, 2, 3 ] );
-    my $zeros = Vector->new( size => 3, data => [ 0, 0, 0 ] );
+    my $v = Vector->initialize(3, [ 1, 2, 3 ] );
+    my $zeros = Vector->initialize(3, [ 0, 0, 0 ] );
 
     my $added = $v->add($zeros);
     is( $added->at(0), 1, 'adding zero vector preserves original' );
@@ -279,7 +279,7 @@ subtest 'math operations - edge cases' => sub {
     is( $multiplied->at(2), 0, 'multiplying by zero vector gives zero' );
 
     # Test with single element vector
-    my $single = Vector->new( size => 1, data => [ 42 ] );
+    my $single = Vector->initialize(1, [ 42 ] );
     my $negated = $single->neg;
     is( $negated->at(0), -42, 'negating single element works' );
 
@@ -288,7 +288,7 @@ subtest 'math operations - edge cases' => sub {
 };
 
 subtest 'abs method - absolute value operation' => sub {
-    my $v = Vector->new( size => 4, data => [-1, 2, -3, 4] );
+    my $v = Vector->initialize(4, [-1, 2, -3, 4] );
     my $abs_result = $v->abs;
 
     isa_ok( $abs_result, 'Vector', 'abs returns a Vector' );
@@ -299,7 +299,7 @@ subtest 'abs method - absolute value operation' => sub {
     is( $abs_result->at(3), 4, 'element at 3: abs(4) is 4' );
 
     # Test with all negative numbers
-    my $v2 = Vector->new( size => 4, data => [-1, -2, -3, -4] );
+    my $v2 = Vector->initialize(4, [-1, -2, -3, -4] );
     my $abs_result2 = $v2->abs;
     is( $abs_result2->at(0), 1, 'all negative: abs(-1) is 1' );
     is( $abs_result2->at(1), 2, 'all negative: abs(-2) is 2' );
@@ -308,7 +308,7 @@ subtest 'abs method - absolute value operation' => sub {
 };
 
 subtest 'abs method - with floating point numbers' => sub {
-    my $v = Vector->new( size => 4, data => [-1.5, 2.5, -3.5, 4.5] );
+    my $v = Vector->initialize(4, [-1.5, 2.5, -3.5, 4.5] );
     my $abs_result = $v->abs;
 
     is( $abs_result->at(0), 1.5, 'floating point: abs(-1.5) is 1.5' );
@@ -318,7 +318,7 @@ subtest 'abs method - with floating point numbers' => sub {
 };
 
 subtest 'trunc method - truncation operation' => sub {
-    my $v = Vector->new( size => 4, data => [1.7, 2.3, 3.9, 4.1] );
+    my $v = Vector->initialize(4, [1.7, 2.3, 3.9, 4.1] );
     my $trunc_result = $v->trunc;
 
     isa_ok( $trunc_result, 'Vector', 'trunc returns a Vector' );
@@ -329,7 +329,7 @@ subtest 'trunc method - truncation operation' => sub {
     is( $trunc_result->at(3), 4, 'element at 3: trunc(4.1) is 4' );
 
     # Test with negative numbers
-    my $v2 = Vector->new( size => 4, data => [-1.7, -2.3, -3.9, -4.1] );
+    my $v2 = Vector->initialize(4, [-1.7, -2.3, -3.9, -4.1] );
     my $trunc_result2 = $v2->trunc;
     is( $trunc_result2->at(0), -1, 'negative: trunc(-1.7) is -1' );
     is( $trunc_result2->at(1), -2, 'negative: trunc(-2.3) is -2' );
@@ -338,7 +338,7 @@ subtest 'trunc method - truncation operation' => sub {
 };
 
 subtest 'trunc method - with integers' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
     my $trunc_result = $v->trunc;
 
     is( $trunc_result->at(0), 1, 'integer: trunc(1) is 1' );

@@ -155,7 +155,7 @@ subtest 'eye method - single element identity matrix' => sub {
 };
 
 subtest 'diagonal method - basic diagonal matrix construction' => sub {
-    my $v = Vector->new( size => 3, data => [2, 3, 4] );
+    my $v = Vector->initialize(3, [2, 3, 4] );
     my $diag = Matrix->diagonal($v);
 
     isa_ok( $diag, 'Matrix', 'diagonal returns a Matrix' );
@@ -177,7 +177,7 @@ subtest 'diagonal method - basic diagonal matrix construction' => sub {
 };
 
 subtest 'diagonal method - with different vector sizes' => sub {
-    my $v2 = Vector->new( size => 2, data => [5, 10] );
+    my $v2 = Vector->initialize(2, [5, 10] );
     my $diag2 = Matrix->diagonal($v2);
 
     isa_ok( $diag2, 'Matrix', 'diagonal returns a Matrix' );
@@ -189,7 +189,7 @@ subtest 'diagonal method - with different vector sizes' => sub {
     is( $diag2->at(0, 1), 0, 'off-diagonal element at (0,1) is 0' );
     is( $diag2->at(1, 0), 0, 'off-diagonal element at (1,0) is 0' );
 
-    my $v4 = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v4 = Vector->initialize(4, [1, 2, 3, 4] );
     my $diag4 = Matrix->diagonal($v4);
 
     isa_ok( $diag4, 'Matrix', 'diagonal returns a Matrix' );
@@ -202,7 +202,7 @@ subtest 'diagonal method - with different vector sizes' => sub {
 };
 
 subtest 'diagonal method - with floating point numbers' => sub {
-    my $v = Vector->new( size => 2, data => [1.5, 2.5] );
+    my $v = Vector->initialize(2, [1.5, 2.5] );
     my $diag = Matrix->diagonal($v);
 
     isa_ok( $diag, 'Matrix', 'diagonal returns a Matrix' );
@@ -214,7 +214,7 @@ subtest 'diagonal method - with floating point numbers' => sub {
 };
 
 subtest 'diagonal method - with negative numbers' => sub {
-    my $v = Vector->new( size => 3, data => [-1, 2, -3] );
+    my $v = Vector->initialize(3, [ -1, 2, -3] );
     my $diag = Matrix->diagonal($v);
 
     isa_ok( $diag, 'Matrix', 'diagonal returns a Matrix' );
@@ -239,7 +239,7 @@ subtest 'constructor methods - edge cases' => sub {
     my $single_eye = Matrix->eye(1);
     is( $single_eye->at(0, 0), 1, 'single element identity matrix' );
 
-    my $single_vec = Vector->new( size => 1, data => [99] );
+    my $single_vec = Vector->initialize(1, [99] );
     my $single_diag = Matrix->diagonal($single_vec);
     is( $single_diag->at(0, 0), 99, 'single element diagonal matrix' );
 };

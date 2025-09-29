@@ -9,36 +9,15 @@ use AbstractTensor;
 use Vector;
 
 class Matrix :isa(AbstractTensor) {
-    field $shape :param :reader;
-    field $data  :param :reader;
-
-    ADJUST {
-        $data = [ ($data) x $self->size ] unless ref $data;
-        Carp::confess "Bad data size, expected ".$self->size." got (".(scalar @$data).")"
-            if scalar @$data != $self->size;
-    }
 
     method rank { 2 }
-
-    # --------------------------------------------------------------------------
-    # Private methods
-    # --------------------------------------------------------------------------
-
-    method _slice (@indices) {
-        ($_ >= 0 && $_ < $self->size)
-            || Carp::confess "Index out of bounds (${_})"
-                foreach @indices;
-        return $data->@[ @indices ]
-    }
 
     # --------------------------------------------------------------------------
     # Accessors
     # --------------------------------------------------------------------------
 
-    method copy_shape { [ @$shape ] }
-
-    method rows { $shape->[0] }
-    method cols { $shape->[1] }
+    method rows { $self->shape->[0] }
+    method cols { $self->shape->[1] }
 
     method height { $self->rows - 1 }
     method width  { $self->cols - 1 }
@@ -150,10 +129,8 @@ class Matrix :isa(AbstractTensor) {
     # Accessing Elements & Groups of Elements
     # --------------------------------------------------------------------------
 
-    method at ($x, $y) { $self->_slice( $self->index($x, $y) ) }
-
-    method row_at ($x) { $self->_slice( $self->row_indices($x) ) }
-    method col_at ($y) { $self->_slice( $self->col_indices($y) ) }
+    method row_at ($x) { $self->slice_data_array( $self->row_indices($x) ) }
+    method col_at ($y) { $self->slice_data_array( $self->col_indices($y) ) }
 
     # TODO:
     # - some way of accessing the main diagonal
@@ -166,11 +143,11 @@ class Matrix :isa(AbstractTensor) {
     # --------------------------------------------------------------------------
 
     method row_vector_at ($x) {
-        return Vector->new(size => $self->cols, data => [ $self->row_at($x) ]);
+        return Vector->initialize($self->cols, [ $self->row_at($x) ]);
     }
 
     method col_vector_at ($y) {
-        return Vector->new(size => $self->rows, data => [ $self->col_at($y) ]);
+        return Vector->initialize($self->rows, [ $self->col_at($y) ]);
     }
 
     # --------------------------------------------------------------------------
@@ -188,9 +165,9 @@ class Matrix :isa(AbstractTensor) {
         $by = -$by;
 
         return __CLASS__->construct(
-            $self->copy_shape,
+            [ $self->shape->@* ],
             sub ($x, $y) {
-                return $self->_slice( $x * $self->cols + ($y + $by) )
+                return $self->slice_data_array( $x * $self->cols + ($y + $by) )
                     if ($y + $by) >= 0 && $y < ($self->cols - $by);
                 return 0;
             }
@@ -205,7 +182,7 @@ class Matrix :isa(AbstractTensor) {
     # FIXME: this is a poor name, fix it ...
     method copy_row ($from, $to) {
         return __CLASS__->construct(
-            $self->copy_shape,
+            [ $self->shape->@* ],
             sub ($x, $y) {
                 return $self->at($from, $y) if $x == $to;
                 return $self->at($x, $y);
@@ -224,9 +201,9 @@ class Matrix :isa(AbstractTensor) {
     method matrix_multiply ($other) {
         # Matrix × Vector: Matrix (m×n) × Vector (n) = Vector (m)
         if ($other isa Vector) {
-            return Vector->new(
-                size => $self->rows,
-                data => [ map { $self->row_vector_at($_)->dot_product($other) } 0 .. ($self->rows - 1) ]
+            return Vector->initialize(
+                $self->rows,
+                [ map { $self->row_vector_at($_)->dot_product($other) } 0 .. ($self->rows - 1) ]
             );
         }
 
@@ -246,15 +223,10 @@ class Matrix :isa(AbstractTensor) {
     # FIXME:
     # these access data directly, which they should not!
 
+    method sum { $self->reduce_data_array(\&AbstractTensor::Ops::add, 0) }
 
-    method reduce ($f, $initial) {
-        return List::Util::reduce { $f->($a, $b) } $initial, @$data
-    }
-
-    method sum { $self->reduce(\&AbstractTensor::Ops::add, 0) }
-
-    method min_value { $self->reduce(\&AbstractTensor::Ops::min, $data->[0]) }
-    method max_value { $self->reduce(\&AbstractTensor::Ops::max, $data->[0]) }
+    method min_value { $self->reduce_data_array(\&AbstractTensor::Ops::min, $self->at(0, 0)) }
+    method max_value { $self->reduce_data_array(\&AbstractTensor::Ops::max, $self->at(0, 0)) }
 
     # --------------------------------------------------------------------------
     # Element-Wise Operations
@@ -262,24 +234,24 @@ class Matrix :isa(AbstractTensor) {
 
     method unary_op ($f) {
         return __CLASS__->construct(
-            $self->copy_shape,
+            [ $self->shape->@* ],
             sub ($x, $y) { $f->( $self->at($x, $y) ) }
         )
     }
 
     method binary_op ($f, $other) {
         return __CLASS__->construct(
-            $self->copy_shape,
+            [ $self->shape->@* ],
             sub ($x, $y) { $f->( $self->at($x, $y), $other ) }
         ) unless blessed $other;
 
         return __CLASS__->construct(
-            $self->copy_shape,
+            [ $self->shape->@* ],
             sub ($x, $y) { $f->( $self->at($x, $y), $other->at($y) ) }
         ) if $other isa Vector;
 
         return __CLASS__->construct(
-            $self->copy_shape,
+            [ $self->shape->@* ],
             sub ($x, $y) { $f->( $self->at($x, $y), $other->at($x, $y) ) }
         )
     }
@@ -292,7 +264,7 @@ class Matrix :isa(AbstractTensor) {
             push @out =>
                 join ' ' =>
                     map { sprintf('%3s', $_) }
-                        $self->_slice( $self->row_indices( $x ) );
+                        $self->slice_data_array( $self->row_indices( $x ) );
         }
         return join "\n" => @out;
     }

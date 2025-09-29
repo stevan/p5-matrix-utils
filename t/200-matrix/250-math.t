@@ -100,7 +100,7 @@ subtest 'add method - with another matrix' => sub {
 
 subtest 'add method - with vector' => sub {
     my $m = Matrix->new( shape => [2, 2], data => [1, 2, 3, 4] );
-    my $v = Vector->new( size => 2, data => [5, 6] );
+    my $v = Vector->initialize(2, [5, 6] );
 
     my $added = $m->add($v);
     isa_ok( $added, 'Matrix', 'add returns a Matrix' );
@@ -158,7 +158,7 @@ subtest 'sub method - with another matrix' => sub {
 
 subtest 'sub method - with vector' => sub {
     my $m = Matrix->new( shape => [2, 2], data => [10, 20, 30, 40] );
-    my $v = Vector->new( size => 2, data => [3, 7] );
+    my $v = Vector->initialize(2, [3, 7] );
 
     my $subtracted = $m->sub($v);
     isa_ok( $subtracted, 'Matrix', 'sub returns a Matrix' );
@@ -223,7 +223,7 @@ subtest 'mul method - with another matrix' => sub {
 
 subtest 'mul method - with vector' => sub {
     my $m = Matrix->new( shape => [2, 2], data => [2, 3, 4, 5] );
-    my $v = Vector->new( size => 2, data => [6, 7] );
+    my $v = Vector->initialize(2, [6, 7] );
 
     my $multiplied = $m->mul($v);
     isa_ok( $multiplied, 'Matrix', 'mul returns a Matrix' );
@@ -281,7 +281,7 @@ subtest 'div method - with another matrix' => sub {
 
 subtest 'div method - with vector' => sub {
     my $m = Matrix->new( shape => [2, 2], data => [12, 15, 18, 21] );
-    my $v = Vector->new( size => 2, data => [3, 5] );
+    my $v = Vector->initialize(2, [3, 5] );
 
     my $divided = $m->div($v);
     isa_ok( $divided, 'Matrix', 'div returns a Matrix' );
@@ -339,7 +339,7 @@ subtest 'mod method - with another matrix' => sub {
 
 subtest 'mod method - with vector' => sub {
     my $m = Matrix->new( shape => [2, 2], data => [10, 15, 20, 25] );
-    my $v = Vector->new( size => 2, data => [3, 4] );
+    my $v = Vector->initialize(2, [3, 4] );
 
     my $modded = $m->mod($v);
     isa_ok( $modded, 'Matrix', 'mod returns a Matrix' );

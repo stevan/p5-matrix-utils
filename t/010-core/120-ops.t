@@ -115,7 +115,7 @@ subtest 'binary_op method - with scalar values' => sub {
 
 subtest 'binary_op method - with vector' => sub {
     my $m = Matrix->new( shape => [2, 2], data => [1, 2, 3, 4] );
-    my $v = Vector->new( size => 2, data => [5, 6] );
+    my $v = Vector->initialize(2, [5, 6] );
 
     # Test addition with vector (applies to each row)
     my $added = $m->binary_op(sub { $_[0] + $_[1] }, $v);
@@ -291,7 +291,7 @@ subtest 'binary_op method - edge cases' => sub {
 
     # Test with vector of different size (should this work?)
     my $m = Matrix->new( shape => [2, 2], data => [1, 2, 3, 4] );
-    my $v = Vector->new( size => 3, data => [1, 2, 3] );
+    my $v = Vector->initialize(3, [1, 2, 3] );
 
     # This might cause issues, but let's test the behavior
     # The behavior depends on implementation - might work or might error

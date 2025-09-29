@@ -6,67 +6,8 @@ use Data::Dumper;
 
 use Vector;
 
-my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
-
-subtest 'reduce method - basic reduction operations' => sub {
-    my $v = Vector->new( size => 4, data => [ 1, 2, 3, 4 ] );
-
-    # Test sum reduction
-    my $sum = $v->reduce(sub { $_[0] + $_[1] }, 0);
-    is( $sum, 10, 'reduce with addition gives sum (10)' );
-
-    # Test product reduction
-    my $product = $v->reduce(sub { $_[0] * $_[1] }, 1);
-    is( $product, 24, 'reduce with multiplication gives product (24)' );
-
-    # Test max reduction
-    my $max = $v->reduce(sub { $_[0] > $_[1] ? $_[0] : $_[1] }, 0);
-    is( $max, 4, 'reduce with max gives maximum (4)' );
-
-    # Test min reduction
-    my $min = $v->reduce(sub { $_[0] < $_[1] ? $_[0] : $_[1] }, 999);
-    is( $min, 1, 'reduce with min gives minimum (1)' );
-};
-
-subtest 'reduce method - with different initial values' => sub {
-    my $v = Vector->new( size => 3, data => [ 2, 3, 4 ] );
-
-    # Test with different initial values for sum
-    is( $v->reduce(sub { $_[0] + $_[1] }, 0), 9, 'reduce with initial 0' );
-    is( $v->reduce(sub { $_[0] + $_[1] }, 10), 19, 'reduce with initial 10' );
-    is( $v->reduce(sub { $_[0] + $_[1] }, -5), 4, 'reduce with initial -5' );
-
-    # Test with different initial values for product
-    is( $v->reduce(sub { $_[0] * $_[1] }, 1), 24, 'reduce product with initial 1' );
-    is( $v->reduce(sub { $_[0] * $_[1] }, 2), 48, 'reduce product with initial 2' );
-};
-
-subtest 'reduce method - with floating point numbers' => sub {
-    my $v = Vector->new( size => 3, data => [ 1.5, 2.5, 3.5 ] );
-
-    my $sum = $v->reduce(sub { $_[0] + $_[1] }, 0.0);
-    is( $sum, 7.5, 'reduce with floating point numbers' );
-
-    my $product = $v->reduce(sub { $_[0] * $_[1] }, 1.0);
-    is( $product, 13.125, 'reduce product with floating point numbers' );
-};
-
-subtest 'reduce method - edge cases' => sub {
-    # Test with single element
-    my $single = Vector->new( size => 1, data => [ 42 ] );
-    is( $single->reduce(sub { $_[0] + $_[1] }, 0), 42, 'reduce single element' );
-
-    # Test with empty vector
-    my $empty = Vector->new( size => 0, data => [] );
-    is( $empty->reduce(sub { $_[0] + $_[1] }, 100), 100, 'reduce empty vector returns initial' );
-
-    # Test with zeros
-    my $zeros = Vector->new( size => 3, data => [ 0, 0, 0 ] );
-    is( $zeros->reduce(sub { $_[0] + $_[1] }, 0), 0, 'reduce zeros gives 0' );
-};
-
 subtest 'unary_op method - basic unary operations' => sub {
-    my $v = Vector->new( size => 3, data => [ 1, 2, 3 ] );
+    my $v = Vector->initialize(3, [ 1, 2, 3 ] );
 
     # Test negation
     my $negated = $v->unary_op(sub { -$_[0] });
@@ -84,7 +25,7 @@ subtest 'unary_op method - basic unary operations' => sub {
     is( $squared->at(2), 9, 'third element squared (9)' );
 
     # Test absolute value
-    my $v2 = Vector->new( size => 3, data => [ -1, 2, -3 ] );
+    my $v2 = Vector->initialize(3, [ -1, 2, -3 ] );
     my $abs = $v2->unary_op(sub { abs($_[0]) });
     is( $abs->at(0), 1, 'absolute value of -1 is 1' );
     is( $abs->at(1), 2, 'absolute value of 2 is 2' );
@@ -92,7 +33,7 @@ subtest 'unary_op method - basic unary operations' => sub {
 };
 
 subtest 'unary_op method - with floating point operations' => sub {
-    my $v = Vector->new( size => 3, data => [ 1.5, 2.5, 3.5 ] );
+    my $v = Vector->initialize(3, [ 1.5, 2.5, 3.5 ] );
 
     # Test doubling
     my $doubled = $v->unary_op(sub { $_[0] * 2 });
@@ -101,7 +42,7 @@ subtest 'unary_op method - with floating point operations' => sub {
     is( $doubled->at(2), 7.0, 'doubled third element' );
 
     # Test square root (approximate)
-    my $v2 = Vector->new( size => 3, data => [ 4, 9, 16 ] );
+    my $v2 = Vector->initialize(3, [ 4, 9, 16 ] );
     my $sqrt = $v2->unary_op(sub { sqrt($_[0]) });
     is( $sqrt->at(0), 2, 'square root of 4 is 2' );
     is( $sqrt->at(1), 3, 'square root of 9 is 3' );
@@ -109,7 +50,7 @@ subtest 'unary_op method - with floating point operations' => sub {
 };
 
 subtest 'binary_op method - with scalar values' => sub {
-    my $v = Vector->new( size => 3, data => [ 1, 2, 3 ] );
+    my $v = Vector->initialize(3, [ 1, 2, 3 ] );
 
     # Test addition with scalar
     my $added = $v->binary_op(sub { $_[0] + $_[1] }, 5);
@@ -133,8 +74,8 @@ subtest 'binary_op method - with scalar values' => sub {
 };
 
 subtest 'binary_op method - with another vector' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 1, 2, 3 ] );
-    my $v2 = Vector->new( size => 3, data => [ 4, 5, 6 ] );
+    my $v1 = Vector->initialize(3, [ 1, 2, 3 ] );
+    my $v2 = Vector->initialize(3, [ 4, 5, 6 ] );
 
     # Test addition with vector
     my $added = $v1->binary_op(sub { $_[0] + $_[1] }, $v2);
@@ -158,8 +99,8 @@ subtest 'binary_op method - with another vector' => sub {
 };
 
 subtest 'binary_op method - with negative numbers' => sub {
-    my $v1 = Vector->new( size => 3, data => [ -1, 2, -3 ] );
-    my $v2 = Vector->new( size => 3, data => [ 4, -5, 6 ] );
+    my $v1 = Vector->initialize(3, [ -1, 2, -3 ] );
+    my $v2 = Vector->initialize(3, [ 4, -5, 6 ] );
 
     # Test addition with negative numbers
     my $added = $v1->binary_op(sub { $_[0] + $_[1] }, $v2);
@@ -175,8 +116,8 @@ subtest 'binary_op method - with negative numbers' => sub {
 };
 
 subtest 'binary_op method - with floating point numbers' => sub {
-    my $v1 = Vector->new( size => 2, data => [ 1.5, 2.5 ] );
-    my $v2 = Vector->new( size => 2, data => [ 2.0, 3.0 ] );
+    my $v1 = Vector->initialize(2, [ 1.5, 2.5 ] );
+    my $v2 = Vector->initialize(2, [ 2.0, 3.0 ] );
 
     # Test addition with floating point
     my $added = $v1->binary_op(sub { $_[0] + $_[1] }, $v2);
@@ -191,8 +132,8 @@ subtest 'binary_op method - with floating point numbers' => sub {
 
 subtest 'binary_op method - edge cases' => sub {
     # Test with zero vector
-    my $v = Vector->new( size => 3, data => [ 1, 2, 3 ] );
-    my $zeros = Vector->new( size => 3, data => [ 0, 0, 0 ] );
+    my $v = Vector->initialize(3, [ 1, 2, 3 ] );
+    my $zeros = Vector->initialize(3, [ 0, 0, 0 ] );
 
     my $added = $v->binary_op(sub { $_[0] + $_[1] }, $zeros);
     is( $added->at(0), 1, 'adding zero vector preserves original' );

@@ -35,31 +35,6 @@ subtest 'width method - matrix width calculation' => sub {
     is( $m4->width, 3, '4x4 matrix has width 3 (cols - 1)' );
 };
 
-subtest 'copy_shape method - shape copying' => sub {
-    my $m = Matrix->new( shape => [3, 4], data => [1..12] );
-    my $shape = $m->copy_shape;
-
-    isa_ok( $shape, 'ARRAY', 'copy_shape returns an array reference' );
-    is( scalar @$shape, 2, 'shape array has 2 elements' );
-    is( $shape->[0], 3, 'first element is rows (3)' );
-    is( $shape->[1], 4, 'second element is cols (4)' );
-
-    # Test that it's a copy, not a reference
-    $shape->[0] = 99;
-    is( $m->rows, 3, 'modifying copied shape does not affect original matrix' );
-
-    # Test with different shapes
-    my $m2 = Matrix->new( shape => [1, 1], data => [42] );
-    my $shape2 = $m2->copy_shape;
-    is( $shape2->[0], 1, 'single element matrix shape copied correctly' );
-    is( $shape2->[1], 1, 'single element matrix shape copied correctly' );
-
-    my $m3 = Matrix->new( shape => [5, 2], data => [1..10] );
-    my $shape3 = $m3->copy_shape;
-    is( $shape3->[0], 5, '5x2 matrix shape copied correctly' );
-    is( $shape3->[1], 2, '5x2 matrix shape copied correctly' );
-};
-
 subtest 'row_at method - row access' => sub {
     my $m = Matrix->new( shape => [3, 3], data => [1, 2, 3, 4, 5, 6, 7, 8, 9] );
 
@@ -179,10 +154,6 @@ subtest 'accessor methods - edge cases' => sub {
     my $single = Matrix->new( shape => [1, 1], data => [42] );
     is( $single->height, 0, 'single element matrix has height 0' );
     is( $single->width, 0, 'single element matrix has width 0' );
-
-    my $shape = $single->copy_shape;
-    is( $shape->[0], 1, 'single element matrix shape copied correctly' );
-    is( $shape->[1], 1, 'single element matrix shape copied correctly' );
 
     my @row = $single->row_at(0);
     is( scalar @row, 1, 'single element matrix row has 1 element' );

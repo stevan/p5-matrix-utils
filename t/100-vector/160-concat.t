@@ -6,11 +6,11 @@ use Data::Dumper;
 
 use Vector;
 
-my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
+my $vector = Vector->initialize(2, [ 1, 2 ] );
 
 subtest 'concat method - basic concatenation' => sub {
-    my $v1 = Vector->new( size => 2, data => [ 1, 2 ] );
-    my $v2 = Vector->new( size => 3, data => [ 3, 4, 5 ] );
+    my $v1 = Vector->initialize(2, [ 1, 2 ] );
+    my $v2 = Vector->initialize(3, [ 3, 4, 5 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -24,8 +24,8 @@ subtest 'concat method - basic concatenation' => sub {
 };
 
 subtest 'concat method - with single element vectors' => sub {
-    my $v1 = Vector->new( size => 1, data => [ 10 ] );
-    my $v2 = Vector->new( size => 1, data => [ 20 ] );
+    my $v1 = Vector->initialize(1, [ 10 ] );
+    my $v2 = Vector->initialize(1, [ 20 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -36,8 +36,8 @@ subtest 'concat method - with single element vectors' => sub {
 };
 
 subtest 'concat method - with empty vectors' => sub {
-    my $v1 = Vector->new( size => 0, data => [] );
-    my $v2 = Vector->new( size => 3, data => [ 1, 2, 3 ] );
+    my $v1 = Vector->initialize(0, [] );
+    my $v2 = Vector->initialize(3, [ 1, 2, 3 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -48,8 +48,8 @@ subtest 'concat method - with empty vectors' => sub {
     is( $result->at(2), 3, 'third element is 3' );
 
     # Test concat with empty vector as second argument
-    my $v3 = Vector->new( size => 2, data => [ 4, 5 ] );
-    my $v4 = Vector->new( size => 0, data => [] );
+    my $v3 = Vector->initialize(2, [ 4, 5 ] );
+    my $v4 = Vector->initialize(0, [] );
 
     my $result2 = Vector->concat($v3, $v4);
 
@@ -59,8 +59,8 @@ subtest 'concat method - with empty vectors' => sub {
     is( $result2->at(1), 5, 'second element is 5' );
 
     # Test concat with both empty vectors
-    my $v5 = Vector->new( size => 0, data => [] );
-    my $v6 = Vector->new( size => 0, data => [] );
+    my $v5 = Vector->initialize(0, [] );
+    my $v6 = Vector->initialize(0, [] );
 
     my $result3 = Vector->concat($v5, $v6);
 
@@ -69,8 +69,8 @@ subtest 'concat method - with empty vectors' => sub {
 };
 
 subtest 'concat method - with floating point numbers' => sub {
-    my $v1 = Vector->new( size => 2, data => [ 1.5, 2.5 ] );
-    my $v2 = Vector->new( size => 2, data => [ 3.14, 4.2 ] );
+    my $v1 = Vector->initialize(2, [ 1.5, 2.5 ] );
+    my $v2 = Vector->initialize(2, [ 3.14, 4.2 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -83,8 +83,8 @@ subtest 'concat method - with floating point numbers' => sub {
 };
 
 subtest 'concat method - with negative numbers' => sub {
-    my $v1 = Vector->new( size => 2, data => [ -1, -2 ] );
-    my $v2 = Vector->new( size => 3, data => [ -3, 0, 3 ] );
+    my $v1 = Vector->initialize(2, [ -1, -2 ] );
+    my $v2 = Vector->initialize(3, [ -3, 0, 3 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -98,8 +98,8 @@ subtest 'concat method - with negative numbers' => sub {
 };
 
 subtest 'concat method - with mixed data types' => sub {
-    my $v1 = Vector->new( size => 2, data => [ 1, 2.5 ] );
-    my $v2 = Vector->new( size => 2, data => [ -3, 0 ] );
+    my $v1 = Vector->initialize(2, [ 1, 2.5 ] );
+    my $v2 = Vector->initialize(2, [ -3, 0 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -112,8 +112,8 @@ subtest 'concat method - with mixed data types' => sub {
 };
 
 subtest 'concat method - order preservation' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 10, 20, 30 ] );
-    my $v2 = Vector->new( size => 3, data => [ 40, 50, 60 ] );
+    my $v1 = Vector->initialize(3, [ 10, 20, 30 ] );
+    my $v2 = Vector->initialize(3, [ 40, 50, 60 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -130,8 +130,8 @@ subtest 'concat method - order preservation' => sub {
 };
 
 subtest 'concat method - with large vectors' => sub {
-    my $v1 = Vector->new( size => 5, data => [ 1, 2, 3, 4, 5 ] );
-    my $v2 = Vector->new( size => 5, data => [ 6, 7, 8, 9, 10 ] );
+    my $v1 = Vector->initialize(5, [ 1, 2, 3, 4, 5 ] );
+    my $v2 = Vector->initialize(5, [ 6, 7, 8, 9, 10 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -145,8 +145,8 @@ subtest 'concat method - with large vectors' => sub {
 };
 
 subtest 'concat method - with zero vectors' => sub {
-    my $v1 = Vector->new( size => 3, data => [ 0, 0, 0 ] );
-    my $v2 = Vector->new( size => 2, data => [ 0, 0 ] );
+    my $v1 = Vector->initialize(3, [ 0, 0, 0 ] );
+    my $v2 = Vector->initialize(2, [ 0, 0 ] );
 
     my $result = Vector->concat($v1, $v2);
 
@@ -160,8 +160,8 @@ subtest 'concat method - with zero vectors' => sub {
 };
 
 subtest 'concat method - immutability of input vectors' => sub {
-    my $v1 = Vector->new( size => 2, data => [ 1, 2 ] );
-    my $v2 = Vector->new( size => 2, data => [ 3, 4 ] );
+    my $v1 = Vector->initialize(2, [ 1, 2 ] );
+    my $v2 = Vector->initialize(2, [ 3, 4 ] );
 
     # Store original values
     my $v1_orig_0 = $v1->at(0);

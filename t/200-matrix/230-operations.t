@@ -94,7 +94,7 @@ subtest 'matrix_multiply method - with identity matrix' => sub {
 };
 
 subtest 'matrix_multiply method - with diagonal matrix' => sub {
-    my $v = Vector->new( size => 3, data => [2, 3, 4] );
+    my $v = Vector->initialize(3, [2, 3, 4] );
     my $diagonal = Matrix->diagonal($v);
     my $m = Matrix->new( shape => [3, 3], data => [1, 2, 3, 4, 5, 6, 7, 8, 9] );
 
@@ -170,7 +170,7 @@ subtest 'matrix_multiply method - with floating point numbers' => sub {
 
 subtest 'matrix_multiply method - with vector (delegates to vector)' => sub {
     my $m = Matrix->new( shape => [2, 3], data => [1, 2, 3, 4, 5, 6] );
-    my $v = Vector->new( size => 3, data => [2, 3, 4] );
+    my $v = Vector->initialize(3, [2, 3, 4] );
 
     # Matrix * Vector should delegate to vector's matrix_multiply method
     my $result = $m->matrix_multiply($v);

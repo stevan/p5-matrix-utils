@@ -34,6 +34,36 @@ class AbstractTensor {
         '""' => 'to_string',
     );
 
+    field $shape :param :reader;
+    field $data  :param :reader;
+
+    ADJUST {
+        $data = [ ($data) x $self->size ] unless ref $data;
+        Carp::confess "Bad data size, expected ".$self->size." got (".(scalar @$data).")"
+            if scalar @$data != $self->size;
+    }
+
+    ## -------------------------------------------------------------------------
+
+    method to_list { return @$data }
+
+    method index_data_array ($index) {
+        ($index >= 0 && $index < $self->size)
+            || Carp::confess "Index out of bounds (${index})";
+        return $data->[ $index ];
+    }
+
+    method slice_data_array (@indices) {
+        ($_ >= 0 && $_ < $self->size)
+            || Carp::confess "Index out of bounds (${_})"
+                foreach @indices;
+        return $data->@[ @indices ]
+    }
+
+    method reduce_data_array ($f, $initial) {
+        return List::Util::reduce { $f->($a, $b) } $initial, @$data
+    }
+
     ## -------------------------------------------------------------------------
 
     sub initialize; # ($class, $shape, data[] | scalar $initial)
@@ -49,12 +79,13 @@ class AbstractTensor {
     ## -------------------------------------------------------------------------
 
     method rank;
-    method shape;
+    method size;
 
     ## -------------------------------------------------------------------------
 
     method index; # (@coords) -> index
-    method at;    # (@coords) -> value
+
+    method at (@coords) { $self->index_data_array( $self->index(@coords) ) }
 
     ## -------------------------------------------------------------------------
 

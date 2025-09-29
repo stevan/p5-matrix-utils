@@ -8,7 +8,7 @@ use Data::Dumper;
 use Vector;
 
 subtest 'eq method - equality comparison with scalar' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
 
     # Test equality with scalar
     my $eq_result = $v->eq(2);
@@ -26,9 +26,9 @@ subtest 'eq method - equality comparison with scalar' => sub {
 };
 
 subtest 'eq method - equality comparison with vector' => sub {
-    my $v1 = Vector->new( size => 4, data => [1, 2, 3, 4] );
-    my $v2 = Vector->new( size => 4, data => [1, 2, 3, 4] );
-    my $v3 = Vector->new( size => 4, data => [1, 2, 3, 5] );
+    my $v1 = Vector->initialize(4, [1, 2, 3, 4] );
+    my $v2 = Vector->initialize(4, [1, 2, 3, 4] );
+    my $v3 = Vector->initialize(4, [1, 2, 3, 5] );
 
     # Test equality with identical vector
     my $eq_result = $v1->eq($v2);
@@ -47,7 +47,7 @@ subtest 'eq method - equality comparison with vector' => sub {
 };
 
 subtest 'ne method - inequality comparison with scalar' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
 
     # Test inequality with scalar
     my $ne_result = $v->ne(2);
@@ -59,9 +59,9 @@ subtest 'ne method - inequality comparison with scalar' => sub {
 };
 
 subtest 'ne method - inequality comparison with vector' => sub {
-    my $v1 = Vector->new( size => 4, data => [1, 2, 3, 4] );
-    my $v2 = Vector->new( size => 4, data => [1, 2, 3, 4] );
-    my $v3 = Vector->new( size => 4, data => [1, 2, 3, 5] );
+    my $v1 = Vector->initialize(4, [1, 2, 3, 4] );
+    my $v2 = Vector->initialize(4, [1, 2, 3, 4] );
+    my $v3 = Vector->initialize(4, [1, 2, 3, 5] );
 
     # Test inequality with identical vector
     my $ne_result = $v1->ne($v2);
@@ -79,7 +79,7 @@ subtest 'ne method - inequality comparison with vector' => sub {
 };
 
 subtest 'lt method - less than comparison with scalar' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
 
     # Test less than with scalar
     my $lt_result = $v->lt(3);
@@ -91,8 +91,8 @@ subtest 'lt method - less than comparison with scalar' => sub {
 };
 
 subtest 'lt method - less than comparison with vector' => sub {
-    my $v1 = Vector->new( size => 4, data => [1, 2, 3, 4] );
-    my $v2 = Vector->new( size => 4, data => [2, 3, 4, 5] );
+    my $v1 = Vector->initialize(4, [1, 2, 3, 4] );
+    my $v2 = Vector->initialize(4, [2, 3, 4, 5] );
 
     # Test less than with vector
     my $lt_result = $v1->lt($v2);
@@ -104,7 +104,7 @@ subtest 'lt method - less than comparison with vector' => sub {
 };
 
 subtest 'le method - less than or equal comparison with scalar' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
 
     # Test less than or equal with scalar
     my $le_result = $v->le(3);
@@ -116,7 +116,7 @@ subtest 'le method - less than or equal comparison with scalar' => sub {
 };
 
 subtest 'gt method - greater than comparison with scalar' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
 
     # Test greater than with scalar
     my $gt_result = $v->gt(2);
@@ -128,7 +128,7 @@ subtest 'gt method - greater than comparison with scalar' => sub {
 };
 
 subtest 'ge method - greater than or equal comparison with scalar' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
 
     # Test greater than or equal with scalar
     my $ge_result = $v->ge(2);
@@ -140,7 +140,7 @@ subtest 'ge method - greater than or equal comparison with scalar' => sub {
 };
 
 subtest 'cmp method - comparison with scalar' => sub {
-    my $v = Vector->new( size => 4, data => [1, 2, 3, 4] );
+    my $v = Vector->initialize(4, [1, 2, 3, 4] );
 
     # Test comparison with scalar
     my $cmp_result = $v->cmp(2);
@@ -152,8 +152,8 @@ subtest 'cmp method - comparison with scalar' => sub {
 };
 
 subtest 'cmp method - comparison with vector' => sub {
-    my $v1 = Vector->new( size => 4, data => [1, 2, 3, 4] );
-    my $v2 = Vector->new( size => 4, data => [2, 2, 2, 5] );
+    my $v1 = Vector->initialize(4, [1, 2, 3, 4] );
+    my $v2 = Vector->initialize(4, [2, 2, 2, 5] );
 
     # Test comparison with vector
     my $cmp_result = $v1->cmp($v2);
@@ -165,7 +165,7 @@ subtest 'cmp method - comparison with vector' => sub {
 };
 
 subtest 'comparison methods - with floating point numbers' => sub {
-    my $v = Vector->new( size => 4, data => [1.5, 2.5, 3.5, 4.5] );
+    my $v = Vector->initialize(4, [1.5, 2.5, 3.5, 4.5] );
 
     # Test equality with floating point
     my $eq_result = $v->eq(2.5);
@@ -184,7 +184,7 @@ subtest 'comparison methods - with floating point numbers' => sub {
 };
 
 subtest 'comparison methods - with negative numbers' => sub {
-    my $v = Vector->new( size => 4, data => [-1, -2, -3, -4] );
+    my $v = Vector->initialize(4, [-1, -2, -3, -4] );
 
     # Test less than with negative numbers
     my $lt_result = $v->lt(-2);
@@ -203,13 +203,13 @@ subtest 'comparison methods - with negative numbers' => sub {
 
 subtest 'comparison methods - edge cases' => sub {
     # Test with zero vector
-    my $zeros = Vector->new( size => 4, data => [0, 0, 0, 0] );
+    my $zeros = Vector->initialize(4, [0, 0, 0, 0] );
     my $eq_zero = $zeros->eq(0);
     is( $eq_zero->at(0), 1, 'zero vector equality with 0 is true' );
     is( $eq_zero->at(3), 1, 'zero vector equality with 0 is true' );
 
     # Test with single element
-    my $single = Vector->new( size => 1, data => [42] );
+    my $single = Vector->initialize(1, [42] );
     my $eq_single = $single->eq(42);
     is( $eq_single->at(0), 1, 'single element equality is true' );
 
@@ -217,7 +217,7 @@ subtest 'comparison methods - edge cases' => sub {
     is( $lt_single->at(0), 1, 'single element less than is true' );
 
     # Test with larger vector
-    my $large = Vector->new( size => 5, data => [1, 2, 3, 4, 5] );
+    my $large = Vector->initialize(5, [1, 2, 3, 4, 5] );
     my $gt_large = $large->gt(3);
     is( $gt_large->at(2), 0, 'large vector: 3 > 3 is false' );
     is( $gt_large->at(4), 1, 'large vector: 5 > 3 is true' );

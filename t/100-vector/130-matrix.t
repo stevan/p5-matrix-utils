@@ -7,7 +7,7 @@ use Data::Dumper;
 use Vector;
 use Matrix;
 
-my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
+my $vector = Vector->initialize( 2, [ 1, 2 ] );
 
 subtest 'matrix_multiply method - basic vector-matrix multiplication' => sub {
     # Create a 2x2 matrix: [[1, 2], [3, 4]]
@@ -18,7 +18,7 @@ subtest 'matrix_multiply method - basic vector-matrix multiplication' => sub {
 
     # Vector [1, 2] * Matrix [[1,2], [3,4]]
     # Result should be [1*1+2*3, 1*2+2*4] = [7, 10]
-    my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
+    my $vector = Vector->initialize( 2, [ 1, 2 ] );
     my $result = $vector->matrix_multiply($matrix);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -36,7 +36,7 @@ subtest 'matrix_multiply method - with 3x3 matrix' => sub {
 
     # Vector [1, 2, 3] * Matrix [[1,2,3], [4,5,6], [7,8,9]]
     # Result should be [1*1+2*4+3*7, 1*2+2*5+3*8, 1*3+2*6+3*9] = [30, 36, 42]
-    my $vector = Vector->new( size => 3, data => [ 1, 2, 3 ] );
+    my $vector = Vector->initialize( 3, [ 1, 2, 3 ] );
     my $result = $vector->matrix_multiply($matrix);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -51,7 +51,7 @@ subtest 'matrix_multiply method - with identity matrix' => sub {
     my $identity = Matrix->eye(3);
 
     # Vector [5, 10, 15] * Identity matrix should return the same vector
-    my $vector = Vector->new( size => 3, data => [ 5, 10, 15 ] );
+    my $vector = Vector->initialize( 3, [ 5, 10, 15 ] );
     my $result = $vector->matrix_multiply($identity);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -63,12 +63,12 @@ subtest 'matrix_multiply method - with identity matrix' => sub {
 
 subtest 'matrix_multiply method - with diagonal matrix' => sub {
     # Create a diagonal matrix from vector [2, 3, 4]
-    my $diag_vector = Vector->new( size => 3, data => [ 2, 3, 4 ] );
+    my $diag_vector = Vector->initialize( 3, [ 2, 3, 4 ] );
     my $diagonal = Matrix->diagonal($diag_vector);
 
     # Vector [1, 1, 1] * Diagonal matrix [[2,0,0], [0,3,0], [0,0,4]]
     # Result should be [1*2+1*0+1*0, 1*0+1*3+1*0, 1*0+1*0+1*4] = [2, 3, 4]
-    my $vector = Vector->new( size => 3, data => [ 1, 1, 1 ] );
+    my $vector = Vector->initialize( 3, [ 1, 1, 1 ] );
     my $result = $vector->matrix_multiply($diagonal);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -87,7 +87,7 @@ subtest 'matrix_multiply method - with floating point numbers' => sub {
 
     # Vector [2.0, 3.0] * Matrix [[1.5,2.5], [3.5,4.5]]
     # Result should be [2.0*1.5+3.0*3.5, 2.0*2.5+3.0*4.5] = [13.5, 18.5]
-    my $vector = Vector->new( size => 2, data => [ 2.0, 3.0 ] );
+    my $vector = Vector->initialize( 2, [ 2.0, 3.0 ] );
     my $result = $vector->matrix_multiply($matrix);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -105,7 +105,7 @@ subtest 'matrix_multiply method - with negative numbers' => sub {
 
     # Vector [1, 2] * Matrix [[-1,-2], [-3,-4]]
     # Result should be [1*(-1)+2*(-3), 1*(-2)+2*(-4)] = [-7, -10]
-    my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
+    my $vector = Vector->initialize( 2, [ 1, 2 ] );
     my $result = $vector->matrix_multiply($matrix);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -122,7 +122,7 @@ subtest 'matrix_multiply method - with zero matrix' => sub {
     );
 
     # Vector [1, 2] * Zero matrix should return zero vector
-    my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
+    my $vector = Vector->initialize( 2, [ 1, 2 ] );
     my $result = $vector->matrix_multiply($matrix);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -139,7 +139,7 @@ subtest 'matrix_multiply method - with zero vector' => sub {
     );
 
     # Zero vector [0, 0] * Matrix should return zero vector
-    my $vector = Vector->new( size => 2, data => [ 0, 0 ] );
+    my $vector = Vector->initialize( 2, [ 0, 0 ] );
     my $result = $vector->matrix_multiply($matrix);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
@@ -156,7 +156,7 @@ subtest 'matrix_multiply method - size validation' => sub {
     );
 
     # Vector of size 2 trying to multiply with 3x2 matrix should work
-    my $vector = Vector->new( size => 2, data => [ 1, 2 ] );
+    my $vector = Vector->initialize( 2, [ 1, 2 ] );
     my $result = $vector->matrix_multiply($matrix);
 
     isa_ok( $result, 'Vector', 'matrix_multiply returns a Vector' );
