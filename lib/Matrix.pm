@@ -18,8 +18,6 @@ class Matrix :isa(AbstractTensor) {
     method height { $self->rows - 1 }
     method width  { $self->cols - 1 }
 
-    method norms { [ $self->height, $self->width ] }
-
     # --------------------------------------------------------------------------
     # Static Constructors
     # --------------------------------------------------------------------------
