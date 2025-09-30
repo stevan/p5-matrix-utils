@@ -40,14 +40,47 @@ class AbstractTensor {
     );
 
     # --------------------------------------------------------------------------
-    # Internal data array implementation
+    # useful lexical subs
     # --------------------------------------------------------------------------
 
-    field $shape :param :reader;
+    my sub calculate_size ($shape) {
+        return $shape unless ref $shape;
+        return List::Util::reduce { $a * $b } 1, @$shape
+    }
+
+    my sub calculate_strides ($shape) {
+        return $shape unless ref $shape;
+
+        my @strides;
+        my $stride = 1;
+        for (my $i = @$shape - 1; $i >= 0; $i-- ) {
+            $strides[$i] = $stride;
+            $stride *= $shape->[$i];
+        }
+        return @strides;
+    }
+
+    my sub allocate_data_array ($shape, $initial) {
+        return [ ($initial) x calculate_size($shape) ]
+    }
+
+    my sub indicies_to_flat ($indicies, $strides) {
+        my $dim = 0;
+        List::Util::reduce { $a + $b * $strides->[ $dim++ ] } 0, @$indicies;
+    }
+
+    # --------------------------------------------------------------------------
+    # Internal ND Array
+    # --------------------------------------------------------------------------
+
     field $data  :param :reader;
+    field $shape :param :reader;
+
+    field @strides :reader;
 
     ADJUST {
-        $data = [ ($data) x $self->size ] unless ref $data;
+        @strides = calculate_strides($shape);
+        $data    = allocate_data_array($shape, $data) unless ref $data;
         Carp::confess "Bad data size, expected ".$self->size." got (".(scalar @$data).")"
             if scalar @$data != $self->size;
     }
@@ -72,25 +105,55 @@ class AbstractTensor {
     }
 
     method reduce_data_array ($f, $initial) {
-        return List::Util::reduce { $f->($a, $b) } $initial, @$data
+        return scalar List::Util::reduce { $f->($a, $b) } $initial, @$data
     }
+
+    # --------------------------------------------------------------------------
+    # Rank, Total size and index <-> coords conversions
+    # --------------------------------------------------------------------------
+
+    method rank { scalar @$shape }
+    method size { calculate_size($shape) }
+
+    method index  (@indicies) { indicies_to_flat(\@indicies, \@strides) }
 
     # --------------------------------------------------------------------------
     # Abstract Constructors & Methods
     # --------------------------------------------------------------------------
 
-    sub initialize; # ($class, $shape, data[] | scalar $initial)
-    sub construct;  # ($class, $shape, $f)
+    sub initialize ($class, $shape, $initial) {
+        return $class->new( shape => [ ref $shape ? @$shape : $shape ], data => $initial )
+    }
 
-    method rank;
-    method size;
+    sub construct ($class, $shape, $f) {
+        my $rank = scalar @$shape;
+        my $size = calculate_size($shape);
 
-    method index; # (@coords) -> index
+        my @new = (0) x $size;
+        if ($rank == 1) {
+            $new[$_] = $f->( $_ ) foreach 0 .. $#new;
+        }
+        elsif ($rank == 2) {
+            my ($rows, $cols) = @$shape;
+            my $i = 0;
+            for (my $x = 0; $x < $rows; $x++) {
+                for (my $y = 0; $y < $cols; $y++) {
+                    $new[$i++] = $f->( $x, $y )
+                }
+            }
+        }
+        else {
+            my @strides = calculate_strides($shape);
+            foreach my $i ( 0 .. ($size - 1) ) {
+                $new[$i] = $f->( map { int($_ / $i) } @strides );
+            }
+        }
+
+        return $class->initialize( $shape, \@new );
+    }
 
     method unary_op;  # ($f)         -> tensor
     method binary_op; # ($f, $other) -> tensor
-
-    method to_string;
 
     # --------------------------------------------------------------------------
     # Static Constructors
@@ -167,6 +230,10 @@ class AbstractTensor {
     method max ($other) { $self->binary_op(\&AbstractTensor::Ops::max, $other) }
 
     ## -------------------------------------------------------------------------
+
+    method to_string {
+        say "TODO!"
+    }
 }
 
 

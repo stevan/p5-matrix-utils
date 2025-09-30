@@ -8,9 +8,6 @@ use AbstractTensor;
 use Vector;
 
 class Matrix :isa(AbstractTensor) {
-
-    method rank { 2 }
-
     # --------------------------------------------------------------------------
     # Accessors
     # --------------------------------------------------------------------------
@@ -23,30 +20,9 @@ class Matrix :isa(AbstractTensor) {
 
     method norms { [ $self->height, $self->width ] }
 
-    method size { $self->rows * $self->cols }
-
     # --------------------------------------------------------------------------
     # Static Constructors
     # --------------------------------------------------------------------------
-
-    sub initialize ($class, $shape, $initial) {
-        return $class->new( shape => [ @$shape ], data => $initial )
-    }
-
-    # Build via f(x, y) ________________________________________________________
-
-    sub construct ($class, $shape, $f) {
-        my ($rows, $cols) = @$shape;
-
-        my @new = (0) x ($rows * $cols);
-        for (my $x = 0; $x < $rows; $x++) {
-            for (my $y = 0; $y < $cols; $y++) {
-                $new[$x * $cols + $y] = $f->( $x, $y )
-            }
-        }
-
-        return $class->initialize([ @$shape ], \@new)
-    }
 
     # Building from others _____________________________________________________
 
@@ -101,12 +77,6 @@ class Matrix :isa(AbstractTensor) {
     # --------------------------------------------------------------------------
     # Index calculators
     # --------------------------------------------------------------------------
-
-    method index ($x, $y) {
-        Carp::confess "Coord out of bounds x(${x})" if $x > $self->height;
-        Carp::confess "Coord out of bounds x(${y})" if $y > $self->width;
-        return $x * $self->cols + $y;
-    }
 
     method row_indices ($x) {
         Carp::confess "Coord out of bounds x(${x})" if $x > $self->height;

@@ -7,30 +7,9 @@ use Carp;
 use AbstractTensor;
 
 class Vector :isa(AbstractTensor) {
-
-    method rank { 1 }
-
-    method size { $self->shape->[0] }
-
-    method index ($idx) { $idx }
-
     # --------------------------------------------------------------------------
     # Static Constructors
     # --------------------------------------------------------------------------
-
-    sub initialize ($class, $size, $initial) {
-        # TODO - throw error if $size is ARRAY ref
-        return $class->new(shape => [ $size ], data => $initial)
-    }
-
-    sub construct ($class, $size, $f) {
-        # TODO - throw error if $size is ARRAY ref
-        my @new = (0) x $size;
-        for (my $i = 0; $i < $size; $i++) {
-            $new[$i] = $f->( $i )
-        }
-        return $class->initialize( $size, \@new );
-    }
 
     sub concat ($class, $a, $b) {
         return $class->initialize(($a->size + $b->size), [ $a->to_list, $b->to_list ])
