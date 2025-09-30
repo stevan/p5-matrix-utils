@@ -3,8 +3,13 @@
 use v5.40;
 use experimental qw[ class ];
 
-use Test::More;
-use Test::Exception;
+$|++;
+
+#use Test::More;
+#use Test::Exception;
+#
+#pass("STFU");
+#done_testing;
 
 use Time::HiRes qw[ time sleep ];
 use Data::Dumper qw[ Dumper ];
@@ -12,26 +17,16 @@ use Data::Dumper qw[ Dumper ];
 use Matrix;
 use Vector;
 
-use Matrix::TransitionMatrix;
+my $n = 3;
 
-my $m1 = Matrix->sequence([ 3, 3 ], 9);
-my $m2 = Matrix->sequence([ 3, 3 ], 9, 10);
-my $m3 = Matrix->concat( $m1, $m2 );
+my $gear  = Vector->initialize(3, [ ((1 / 3600), (1 / 60),  1) ]);
+my $mod   = Vector->initialize(3, [ (        24,       60, 60) ]);
+my $clock = Vector->initialize(3, 1);
 
-say "M1:";
-say $m1;
+printf("%02d:%02d:%02d\r", ($clock * $gear * $_ % $mod)->to_list ),
+#printf("%s      \r", ($clock * $gear * $_ % $mod) ),
+    sleep(0.1)
+        foreach 0 .. 10000;
 
-say "M2:";
-say $m2;
 
-say "M3:";
-say $m3;
 
-say "STACK:";
-say Matrix->stack(
-    Matrix->concat( $m1, $m2 ),
-    Matrix->concat( $m2, $m1 ),
-);
-
-pass("STFU");
-done_testing;

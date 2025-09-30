@@ -149,12 +149,18 @@ class AbstractTensor {
     ## -------------------------------------------------------------------------
     ## Numerical Operations
     ## -------------------------------------------------------------------------
+    no builtin; # stupid floor/ceil mismatches
 
     # unary
     method trunc { $self->unary_op(\&AbstractTensor::Ops::trunc) }
     method fract { $self->unary_op(\&AbstractTensor::Ops::fract) }
-    #method floor { $self->unary_op(\&AbstractTensor::Ops::floor) }
-    #method ceil  { $self->unary_op(\&AbstractTensor::Ops::ceil ) }
+
+    method round_down { $self->unary_op(\&AbstractTensor::Ops::round_down) }
+    method round_up   { $self->unary_op(\&AbstractTensor::Ops::round_up) }
+
+    method clamp ($min, $max) {
+        $self->unary_op(sub ($n) { AbstractTensor::Ops::clamp($min, $max, $n) })
+    }
 
     # binary
     method min ($other) { $self->binary_op(\&AbstractTensor::Ops::min, $other) }
@@ -166,7 +172,6 @@ class AbstractTensor {
 
 package AbstractTensor::Ops {
     use v5.40;
-    no builtin;
 
     ## -------------------------------------------------------------------------
     ## Math operations
@@ -215,8 +220,8 @@ package AbstractTensor::Ops {
     sub trunc ($n) { int($n) }
     sub fract ($n) { int($n) - $n }
 
-    #sub floor ($n) { use builtin qw[ floor ]; floor($n) }
-    #sub ceil  ($n) { use builtin qw[ ceil  ]; ceil($n) }
+    sub round_down ($n) { floor($n) }
+    sub round_up   ($n) { ceil($n) }
 
     # binary
     sub min ($n, $m) { $n < $m ? $n : $m }
