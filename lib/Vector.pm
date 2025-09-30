@@ -4,19 +4,11 @@ use experimental qw[ class ];
 
 use Carp;
 
-use AbstractTensor;
+use Tensor;
 
-class Vector :isa(AbstractTensor) {
+class Vector :isa(Tensor) {
     # --------------------------------------------------------------------------
-    # Static Constructors
-    # --------------------------------------------------------------------------
-
-    sub concat ($class, $a, $b) {
-        return $class->initialize(($a->size + $b->size), [ $a->to_list, $b->to_list ])
-    }
-
-    # --------------------------------------------------------------------------
-    # accessing elements
+    # Vector specific methods
     # --------------------------------------------------------------------------
 
     method index_of ($value) {
@@ -26,6 +18,14 @@ class Vector :isa(AbstractTensor) {
             $i++;
         }
         return -1;
+    }
+
+    # --------------------------------------------------------------------------
+    # Static Constructors
+    # --------------------------------------------------------------------------
+
+    sub concat ($class, $a, $b) {
+        return $class->initialize(($a->size + $b->size), [ $a->to_list, $b->to_list ])
     }
 
     # --------------------------------------------------------------------------
@@ -43,37 +43,12 @@ class Vector :isa(AbstractTensor) {
     # Reductions (scalar results)
     # --------------------------------------------------------------------------
 
-    method sum { $self->reduce_data_array(\&AbstractTensor::Ops::add, 0) }
-
-    method min_value { $self->reduce_data_array(\&AbstractTensor::Ops::min, $self->at(0)) }
-    method max_value { $self->reduce_data_array(\&AbstractTensor::Ops::max, $self->at(0)) }
+    method min_value { $self->reduce_data_array(\&AbstractTensor::Ops::min) }
+    method max_value { $self->reduce_data_array(\&AbstractTensor::Ops::max) }
 
     method dot_product ($other) {
         my $i = 0;
         return $self->reduce_data_array(sub ($acc, $x) { $acc + ($x * $other->at($i++)) }, 0)
-    }
-
-    # --------------------------------------------------------------------------
-    # Element-Wise Operations
-    # --------------------------------------------------------------------------
-
-    method unary_op ($f) {
-        return Vector->initialize(
-            $self->size,
-            [ map { $f->( $self->at($_) ) } 0 .. ($self->size - 1) ]
-        )
-    }
-
-    method binary_op ($f, $other) {
-        return Vector->initialize(
-            $self->size,
-            [ map { $f->( $self->at($_), $other ) } 0 .. ($self->size - 1) ]
-        ) unless blessed $other;
-
-        return Vector->initialize(
-            $self->size,
-            [ map { $f->( $self->at($_), $other->at($_) ) } 0 .. ($self->size - 1) ]
-        )
     }
 
     # --------------------------------------------------------------------------

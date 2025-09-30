@@ -4,10 +4,10 @@ use experimental qw[ class ];
 
 use Carp;
 
-use AbstractTensor;
+use Tensor;
 use Vector;
 
-class Matrix :isa(AbstractTensor) {
+class Matrix :isa(Tensor) {
     # --------------------------------------------------------------------------
     # Accessors
     # --------------------------------------------------------------------------
@@ -179,42 +179,17 @@ class Matrix :isa(AbstractTensor) {
     }
 
     # --------------------------------------------------------------------------
-    # Reductions (scalar results)
+    # Specialized version of Tensor's binary_op to handle the edge case
     # --------------------------------------------------------------------------
-    # FIXME:
-    # these access data directly, which they should not!
-
-    method sum { $self->reduce_data_array(\&AbstractTensor::Ops::add, 0) }
-
-    method min_value { $self->reduce_data_array(\&AbstractTensor::Ops::min, $self->at(0, 0)) }
-    method max_value { $self->reduce_data_array(\&AbstractTensor::Ops::max, $self->at(0, 0)) }
-
-    # --------------------------------------------------------------------------
-    # Element-Wise Operations
-    # --------------------------------------------------------------------------
-
-    method unary_op ($f) {
-        return __CLASS__->construct(
-            [ $self->shape->@* ],
-            sub ($x, $y) { $f->( $self->at($x, $y) ) }
-        )
-    }
 
     method binary_op ($f, $other) {
-        return __CLASS__->construct(
-            [ $self->shape->@* ],
-            sub ($x, $y) { $f->( $self->at($x, $y), $other ) }
-        ) unless blessed $other;
-
+        # FIXME: do this better, is it really a special case?
         return __CLASS__->construct(
             [ $self->shape->@* ],
             sub ($x, $y) { $f->( $self->at($x, $y), $other->at($y) ) }
         ) if $other isa Vector;
 
-        return __CLASS__->construct(
-            [ $self->shape->@* ],
-            sub ($x, $y) { $f->( $self->at($x, $y), $other->at($x, $y) ) }
-        )
+        return $self->next::method($f, $other);
     }
 
     # --------------------------------------------------------------------------

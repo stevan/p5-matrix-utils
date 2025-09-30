@@ -4,7 +4,7 @@ use experimental qw[ class ];
 
 use List::Util;
 
-class AbstractTensor {
+class Tensor {
     # --------------------------------------------------------------------------
     # Overloads
     # --------------------------------------------------------------------------
@@ -104,8 +104,22 @@ class AbstractTensor {
         return $data->@[ @indices ]
     }
 
-    method reduce_data_array ($f, $initial) {
-        return scalar List::Util::reduce { $f->($a, $b) } $initial, @$data
+    method map_data_array ($f) {
+        [ map { $f->($_) } @$data ]
+    }
+
+    method zip_data_arrays ($f, $other) {
+        return [
+            map { $f->( $data->[$_], $other ) } 0 .. ($self->size - 1)
+        ] if !blessed $other;
+
+        return [
+            map { $f->( $data->[$_], $other->data->[$_] ) } 0 .. ($self->size - 1)
+        ]
+    }
+
+    method reduce_data_array ($f, $initial=undef) {
+        return scalar List::Util::reduce { $f->($a, $b) } ($initial // ()), @$data
     }
 
     # --------------------------------------------------------------------------
@@ -143,17 +157,14 @@ class AbstractTensor {
             }
         }
         else {
-            my @strides = calculate_strides($shape);
+            my @strides = reverse calculate_strides($shape);
             foreach my $i ( 0 .. ($size - 1) ) {
-                $new[$i] = $f->( map { int($_ / $i) } @strides );
+                $new[$i] = $f->( map { int($i / $_) } @strides );
             }
         }
 
         return $class->initialize( $shape, \@new );
     }
-
-    method unary_op;  # ($f)         -> tensor
-    method binary_op; # ($f, $other) -> tensor
 
     # --------------------------------------------------------------------------
     # Static Constructors
@@ -171,6 +182,27 @@ class AbstractTensor {
     # --------------------------------------------------------------------------
 
     method at (@coords) { $self->index_data_array( $self->index(@coords) ) }
+
+    # --------------------------------------------------------------------------
+    # Scalar Values
+    # --------------------------------------------------------------------------
+
+    method sum { $self->reduce_data_array(\&AbstractTensor::Ops::add, 0) }
+
+    method min_value { $self->reduce_data_array(\&AbstractTensor::Ops::min) }
+    method max_value { $self->reduce_data_array(\&AbstractTensor::Ops::max) }
+
+    # --------------------------------------------------------------------------
+    # Operations
+    # --------------------------------------------------------------------------
+
+    method unary_op ($f) {
+        __CLASS__->initialize($shape, $self->map_data_array($f))
+    }
+
+    method binary_op ($f, $other) {
+        __CLASS__->initialize($shape, $self->zip_data_arrays($f, $other))
+    }
 
     ## -------------------------------------------------------------------------
     ## Math operations
