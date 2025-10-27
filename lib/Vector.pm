@@ -43,8 +43,8 @@ class Vector :isa(Tensor) {
     # Reductions (scalar results)
     # --------------------------------------------------------------------------
 
-    method min_value { $self->reduce_data_array(\&AbstractTensor::Ops::min) }
-    method max_value { $self->reduce_data_array(\&AbstractTensor::Ops::max) }
+    method min_value { $self->reduce_data_array(\&Tensor::Ops::min) }
+    method max_value { $self->reduce_data_array(\&Tensor::Ops::max) }
 
     method dot_product ($other) {
         my $i = 0;

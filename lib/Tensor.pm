@@ -143,7 +143,22 @@ class Tensor {
     method rank { scalar @$shape }
     method size { calculate_size($shape) }
 
-    method index  (@indicies) { indicies_to_flat(\@indicies, \@strides) }
+    method index  (@indicies) {
+        Carp::confess "The number of indicies must match the rank got(".(scalar @indicies).") expected(".$self->rank.")"
+            if $self->rank != scalar @indicies;
+        return indicies_to_flat(\@indicies, \@strides)
+    }
+
+    method dim_index (@indicies) {
+        Carp::confess "The number of indicies must be less than the rank got(".(scalar @indicies).") expected(".$self->rank.")"
+            if $self->rank < scalar @indicies;
+
+        my $dim   = $#indicies;
+        my $start = indicies_to_flat(\@indicies, \@strides);
+        my $end   = $start + $strides[ $dim ] - 1;
+
+        return ($start .. $end)
+    }
 
     # --------------------------------------------------------------------------
     # Abstract Constructors & Methods
@@ -187,8 +202,9 @@ class Tensor {
     sub ones  ($class, $shape) { $class->initialize($shape, 1) }
     sub zeros ($class, $shape) { $class->initialize($shape, 0) }
 
-    sub sequence ($class, $shape, $size, $offset=0) {
-        $class->initialize([ @$shape ], [ $offset .. ($offset + ($size - 1)) ]);
+    sub sequence ($class, $shape, $start) {
+        my $size = calculate_size($shape);
+        $class->initialize([ @$shape ], [ $start .. ($start + ($size - 1)) ]);
     }
 
     # --------------------------------------------------------------------------
@@ -197,14 +213,16 @@ class Tensor {
 
     method at (@coords) { $self->index_data_array( $self->index(@coords) ) }
 
+    method dim_at (@coords) { $self->slice_data_array( $self->dim_index(@coords) ) }
+
     # --------------------------------------------------------------------------
     # Scalar Values
     # --------------------------------------------------------------------------
 
-    method sum { $self->reduce_data_array(\&AbstractTensor::Ops::add, 0) }
+    method sum { $self->reduce_data_array(\&Tensor::Ops::add, 0) }
 
-    method min_value { $self->reduce_data_array(\&AbstractTensor::Ops::min) }
-    method max_value { $self->reduce_data_array(\&AbstractTensor::Ops::max) }
+    method min_value { $self->reduce_data_array(\&Tensor::Ops::min) }
+    method max_value { $self->reduce_data_array(\&Tensor::Ops::max) }
 
     # --------------------------------------------------------------------------
     # Operations
@@ -223,66 +241,97 @@ class Tensor {
     ## -------------------------------------------------------------------------
 
     # unary
-    method neg { $self->unary_op(\&AbstractTensor::Ops::neg) }
-    method abs { $self->unary_op(\&AbstractTensor::Ops::abs) }
+    method neg { $self->unary_op(\&Tensor::Ops::neg) }
+    method abs { $self->unary_op(\&Tensor::Ops::abs) }
 
     # binary
-    method add ($other) { $self->binary_op(\&AbstractTensor::Ops::add, $other) }
-    method sub ($other) { $self->binary_op(\&AbstractTensor::Ops::sub, $other) }
-    method mul ($other) { $self->binary_op(\&AbstractTensor::Ops::mul, $other) }
-    method div ($other) { $self->binary_op(\&AbstractTensor::Ops::div, $other) }
-    method mod ($other) { $self->binary_op(\&AbstractTensor::Ops::mod, $other) }
-    method pow ($other) { $self->binary_op(\&AbstractTensor::Ops::pow, $other) }
+    method add ($other) { $self->binary_op(\&Tensor::Ops::add, $other) }
+    method sub ($other) { $self->binary_op(\&Tensor::Ops::sub, $other) }
+    method mul ($other) { $self->binary_op(\&Tensor::Ops::mul, $other) }
+    method div ($other) { $self->binary_op(\&Tensor::Ops::div, $other) }
+    method mod ($other) { $self->binary_op(\&Tensor::Ops::mod, $other) }
+    method pow ($other) { $self->binary_op(\&Tensor::Ops::pow, $other) }
 
     ## -------------------------------------------------------------------------
     ## Comparison Operations
     ## -------------------------------------------------------------------------
 
     # binary
-    method eq  ($other) { $self->binary_op(\&AbstractTensor::Ops::eq,  $other) }
-    method ne  ($other) { $self->binary_op(\&AbstractTensor::Ops::ne,  $other) }
-    method lt  ($other) { $self->binary_op(\&AbstractTensor::Ops::lt,  $other) }
-    method le  ($other) { $self->binary_op(\&AbstractTensor::Ops::le,  $other) }
-    method gt  ($other) { $self->binary_op(\&AbstractTensor::Ops::gt,  $other) }
-    method ge  ($other) { $self->binary_op(\&AbstractTensor::Ops::ge,  $other) }
-    method cmp ($other) { $self->binary_op(\&AbstractTensor::Ops::cmp, $other) }
+    method eq  ($other) { $self->binary_op(\&Tensor::Ops::eq,  $other) }
+    method ne  ($other) { $self->binary_op(\&Tensor::Ops::ne,  $other) }
+    method lt  ($other) { $self->binary_op(\&Tensor::Ops::lt,  $other) }
+    method le  ($other) { $self->binary_op(\&Tensor::Ops::le,  $other) }
+    method gt  ($other) { $self->binary_op(\&Tensor::Ops::gt,  $other) }
+    method ge  ($other) { $self->binary_op(\&Tensor::Ops::ge,  $other) }
+    method cmp ($other) { $self->binary_op(\&Tensor::Ops::cmp, $other) }
 
     ## -------------------------------------------------------------------------
     ## Logical Operations
     ## -------------------------------------------------------------------------
 
-    method not { $self->unary_op(\&AbstractTensor::Ops::not) }
-    method and ($other) { $self->binary_op(\&AbstractTensor::Ops::and, $other) }
-    method or  ($other) { $self->binary_op(\&AbstractTensor::Ops::or, $other)  }
+    method not { $self->unary_op(\&Tensor::Ops::not) }
+    method and ($other) { $self->binary_op(\&Tensor::Ops::and, $other) }
+    method or  ($other) { $self->binary_op(\&Tensor::Ops::or, $other)  }
 
     ## -------------------------------------------------------------------------
     ## Numerical Operations
     ## -------------------------------------------------------------------------
 
     # unary
-    method trunc { $self->unary_op(\&AbstractTensor::Ops::trunc) }
-    method fract { $self->unary_op(\&AbstractTensor::Ops::fract) }
+    method trunc { $self->unary_op(\&Tensor::Ops::trunc) }
+    method fract { $self->unary_op(\&Tensor::Ops::fract) }
 
-    method round_down { $self->unary_op(\&AbstractTensor::Ops::round_down) }
-    method round_up   { $self->unary_op(\&AbstractTensor::Ops::round_up) }
+    method round_down { $self->unary_op(\&Tensor::Ops::round_down) }
+    method round_up   { $self->unary_op(\&Tensor::Ops::round_up) }
 
     method clamp ($min, $max) {
-        $self->unary_op(sub ($n) { AbstractTensor::Ops::clamp($min, $max, $n) })
+        $self->unary_op(sub ($n) { Tensor::Ops::clamp($min, $max, $n) })
     }
 
     # binary
-    method min ($other) { $self->binary_op(\&AbstractTensor::Ops::min, $other) }
-    method max ($other) { $self->binary_op(\&AbstractTensor::Ops::max, $other) }
+    method min ($other) { $self->binary_op(\&Tensor::Ops::min, $other) }
+    method max ($other) { $self->binary_op(\&Tensor::Ops::max, $other) }
 
     ## -------------------------------------------------------------------------
 
     method to_string {
-        say "TODO!"
+        my @to_draw = @strides;
+        my $stride  = pop @to_draw;
+        my $step    = pop @to_draw;
+
+        unshift @to_draw => scalar @$data;
+
+        say "rank    : ", $self->rank;
+        say "shape   : ", join ', ' => @$shape;
+        say "strides : ", join ', ' => @strides;
+        say "to_draw : ", join ', ' => @to_draw;
+        say "stride  : ${stride}";
+        say "step    : ${step}";
+
+        my @out;
+        for (my $i = 0; $i < scalar @$data; $i += $step ) {
+            push @out => join '' =>
+                (map {
+                    ($i == 0)
+                        ? '╭─'
+                    : (($i + $step) >= scalar @$data)
+                        ? '╰─'
+                    : ($i % $_) == 0
+                        ? '╭─'
+                    : (($i + $step) % $_)
+                        ? '│ '
+                        : '╰─';
+                } @to_draw),
+                '[ '.(join ' ' => map { sprintf('%3s', $_) } $data->@[ $i .. ($i + ($step - 1)) ]).' ]'
+                #' = ('.(join ', ' => $i .. ($i + $stride)).') : step='.$to_draw[-1];
+        }
+
+        return join "\n" => @out;
     }
 }
 
 
-package AbstractTensor::Ops {
+package Tensor::Ops {
     use v5.40;
 
     ## -------------------------------------------------------------------------
@@ -340,7 +389,7 @@ package AbstractTensor::Ops {
     sub max ($n, $m) { $n > $m ? $n : $m }
 
     # ternary
-    sub clamp ($min, $max, $n) { max($min, min($max, $n)) }
+    sub clamp ($min, $max, $n) { max($min, min($n, $max)) }
 
 }
 
