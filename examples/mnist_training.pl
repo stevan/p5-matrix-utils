@@ -78,23 +78,33 @@ class NeuralNetwork {
         return ($Z1, $A1, $Z2, $A2);
     }
 
-    method backward ($X, $y_true, $Z1, $A1, $Z2, $A2) {
-        # Backpropagation to compute gradients
+    method backward ($X, $y_true, $Z1, $A1, $Z2, $A2, $W2_T) {
+        # OPTIMIZED: Backpropagation with cached W2 transpose
 
         # Output layer gradients
         # For softmax + cross-entropy, derivative simplifies to: y_pred - y_true
         my $dZ2 = $A2->sub($y_true);
 
         # Gradients for W2 and b2
-        # dW2 = A1^T * dZ2
-        my $A1_as_matrix = Matrix->initialize([1, $hidden_size], [$A1->to_list]);
-        my $dZ2_as_matrix = Matrix->initialize([1, $output_size], [$dZ2->to_list]);
-        my $dW2 = $A1_as_matrix->transpose->matrix_multiply($dZ2_as_matrix);
+        # dW2 = A1^T * dZ2 (outer product: hidden_size × output_size)
+        # Compute directly without temporary Matrix objects
+        my $A1_data = $A1->data;
+        my $dZ2_data = $dZ2->data;
+        my @dW2_data;
+        $#dW2_data = $hidden_size * $output_size - 1;
+
+        my $idx = 0;
+        for (my $i = 0; $i < $hidden_size; $i++) {
+            for (my $j = 0; $j < $output_size; $j++) {
+                $dW2_data[$idx++] = $A1_data->[$i] * $dZ2_data->[$j];
+            }
+        }
+        my $dW2 = Matrix->initialize([$hidden_size, $output_size], \@dW2_data);
         my $db2 = $dZ2;  # Sum over batch (but batch=1 for now)
 
         # Hidden layer gradients
-        # dA1 = dZ2 * W2^T
-        my $dA1 = $dZ2->matrix_multiply($W2->transpose);
+        # dA1 = dZ2 * W2^T (use cached transpose)
+        my $dA1 = $dZ2->matrix_multiply($W2_T);
 
         # ReLU derivative: gradient flows only where Z1 > 0
         # dZ1 = dA1 * (Z1 > 0)
@@ -102,34 +112,52 @@ class NeuralNetwork {
         my $dZ1 = $dA1->mul($relu_mask);
 
         # Gradients for W1 and b1
-        # dW1 = X^T * dZ1
-        my $X_as_matrix = Matrix->initialize([1, $input_size], [$X->to_list]);
-        my $dZ1_as_matrix = Matrix->initialize([1, $hidden_size], [$dZ1->to_list]);
-        my $dW1 = $X_as_matrix->transpose->matrix_multiply($dZ1_as_matrix);
+        # dW1 = X^T * dZ1 (outer product: input_size × hidden_size)
+        # Compute directly without temporary Matrix objects
+        my $X_data = $X->data;
+        my $dZ1_data = $dZ1->data;
+        my @dW1_data;
+        $#dW1_data = $input_size * $hidden_size - 1;
+
+        $idx = 0;
+        for (my $i = 0; $i < $input_size; $i++) {
+            for (my $j = 0; $j < $hidden_size; $j++) {
+                $dW1_data[$idx++] = $X_data->[$i] * $dZ1_data->[$j];
+            }
+        }
+        my $dW1 = Matrix->initialize([$input_size, $hidden_size], \@dW1_data);
         my $db1 = $dZ1;  # Sum over batch
 
         return ($dW1, $db1, $dW2, $db2);
     }
 
     method update_weights ($dW1, $db1, $dW2, $db2) {
-        # Gradient descent weight update
-        # W = W - learning_rate * dW
+        # OPTIMIZED: In-place gradient descent (no object creation)
+        # W -= learning_rate * dW
 
-        # Update W1
-        my $W1_update = $dW1->mul($learning_rate);
-        $W1 = $W1->sub($W1_update);
+        my $W1_data = $W1->data;
+        my $dW1_data = $dW1->data;
+        for (my $i = 0; $i < @$W1_data; $i++) {
+            $W1_data->[$i] -= $learning_rate * $dW1_data->[$i];
+        }
 
-        # Update b1
-        my $b1_update = $db1->mul($learning_rate);
-        $b1 = $b1->sub($b1_update);
+        my $b1_data = $b1->data;
+        my $db1_data = $db1->data;
+        for (my $i = 0; $i < @$b1_data; $i++) {
+            $b1_data->[$i] -= $learning_rate * $db1_data->[$i];
+        }
 
-        # Update W2
-        my $W2_update = $dW2->mul($learning_rate);
-        $W2 = $W2->sub($W2_update);
+        my $W2_data = $W2->data;
+        my $dW2_data = $dW2->data;
+        for (my $i = 0; $i < @$W2_data; $i++) {
+            $W2_data->[$i] -= $learning_rate * $dW2_data->[$i];
+        }
 
-        # Update b2
-        my $b2_update = $db2->mul($learning_rate);
-        $b2 = $b2->sub($b2_update);
+        my $b2_data = $b2->data;
+        my $db2_data = $db2->data;
+        for (my $i = 0; $i < @$b2_data; $i++) {
+            $b2_data->[$i] -= $learning_rate * $db2_data->[$i];
+        }
     }
 
     method compute_loss ($predictions, $targets) {
@@ -164,6 +192,9 @@ class NeuralNetwork {
                 my $X = $X_train->[$i];
                 my $y_true = $y_train->[$i];
 
+                # Cache W2 transpose (computed once per sample)
+                my $W2_T = $W2->transpose;
+
                 # Forward pass
                 my ($Z1, $A1, $Z2, $A2) = $self->forward($X);
 
@@ -176,11 +207,11 @@ class NeuralNetwork {
                 my $true_class = $self->vector_to_class($y_true);
                 $correct++ if $pred_class == $true_class;
 
-                # Backward pass
+                # Backward pass (uses cached W2_T)
                 my ($dW1, $db1, $dW2, $db2) =
-                    $self->backward($X, $y_true, $Z1, $A1, $Z2, $A2);
+                    $self->backward($X, $y_true, $Z1, $A1, $Z2, $A2, $W2_T);
 
-                # Update weights
+                # Update weights (in-place, no object creation)
                 $self->update_weights($dW1, $db1, $dW2, $db2);
 
                 # Progress indicator

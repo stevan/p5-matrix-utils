@@ -160,16 +160,16 @@ class Matrix :isa(Tensor) {
     # --------------------------------------------------------------------------
 
     method transpose {
-        # OPTIMIZED: Direct array manipulation instead of construct
+        # OPTIMIZED: Direct array manipulation
         my $rows = $self->rows;
         my $cols = $self->cols;
-        my @result;
 
         my $data = $self->data;
+        my @result;
 
         # Transpose: result[j,i] = original[i,j]
-        for my $j (0 .. $cols - 1) {
-            for my $i (0 .. $rows - 1) {
+        for (my $j = 0; $j < $cols; $j++) {
+            for (my $i = 0; $i < $rows; $i++) {
                 # Original[i,j] in row-major = data[i * cols + j]
                 $result[$j * $rows + $i] = $data->[$i * $cols + $j];
             }
@@ -184,19 +184,20 @@ class Matrix :isa(Tensor) {
 
     method matrix_multiply ($other) {
         # Matrix × Vector: Matrix (m×n) × Vector (n) = Vector (m)
-        # OPTIMIZED: Direct array manipulation without intermediate Vector objects
+        # OPTIMIZED: Direct array manipulation
         if ($other isa Vector) {
             my $rows = $self->rows;
             my $cols = $self->cols;
-            my @result;
 
             my $mat_data = $self->data;
             my $vec_data = $other->data;
 
-            for my $r (0 .. $rows - 1) {
+            my @result;
+
+            for (my $r = 0; $r < $rows; $r++) {
                 my $sum = 0;
                 my $row_start = $r * $cols;
-                for my $c (0 .. $cols - 1) {
+                for (my $c = 0; $c < $cols; $c++) {
                     $sum += $mat_data->[$row_start + $c] * $vec_data->[$c];
                 }
                 push @result, $sum;
@@ -210,19 +211,18 @@ class Matrix :isa(Tensor) {
         my $m = $self->rows;
         my $n = $self->cols;
         my $p = $other->cols;
-        my @result;
 
         my $a_data = $self->data;
         my $b_data = $other->data;
 
-        for my $i (0 .. $m - 1) {
-            for my $j (0 .. $p - 1) {
+        my @result;
+
+        for (my $i = 0; $i < $m; $i++) {
+            for (my $j = 0; $j < $p; $j++) {
                 my $sum = 0;
                 my $a_row_start = $i * $n;
-                for my $k (0 .. $n - 1) {
+                for (my $k = 0; $k < $n; $k++) {
                     # A[i,k] * B[k,j]
-                    # A is row-major: A[i,k] = a_data[i*n + k]
-                    # B is row-major: B[k,j] = b_data[k*p + j]
                     $sum += $a_data->[$a_row_start + $k] * $b_data->[$k * $p + $j];
                 }
                 push @result, $sum;

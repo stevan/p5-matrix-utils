@@ -258,6 +258,82 @@ class Tensor {
         __CLASS__->initialize($shape, $self->zip_data_arrays($f, $other))
     }
 
+    # --------------------------------------------------------------------------
+    # In-Place Operations (FAST - no object creation)
+    # --------------------------------------------------------------------------
+
+    method add_inplace ($other) {
+        # $self += $other (modifies $self in place)
+        my $self_data = $data;
+        my $other_data = ref($other) ? $other->data : $other;
+
+        if (ref($other)) {
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] += $other_data->[$i];
+            }
+        } else {
+            # Scalar addition
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] += $other;
+            }
+        }
+        return $self;
+    }
+
+    method sub_inplace ($other) {
+        # $self -= $other (modifies $self in place)
+        my $self_data = $data;
+        my $other_data = ref($other) ? $other->data : $other;
+
+        if (ref($other)) {
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] -= $other_data->[$i];
+            }
+        } else {
+            # Scalar subtraction
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] -= $other;
+            }
+        }
+        return $self;
+    }
+
+    method mul_inplace ($other) {
+        # $self *= $other (modifies $self in place)
+        my $self_data = $data;
+        my $other_data = ref($other) ? $other->data : $other;
+
+        if (ref($other)) {
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] *= $other_data->[$i];
+            }
+        } else {
+            # Scalar multiplication
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] *= $other;
+            }
+        }
+        return $self;
+    }
+
+    method div_inplace ($other) {
+        # $self /= $other (modifies $self in place)
+        my $self_data = $data;
+        my $other_data = ref($other) ? $other->data : $other;
+
+        if (ref($other)) {
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] /= $other_data->[$i];
+            }
+        } else {
+            # Scalar division
+            for (my $i = 0; $i < @$self_data; $i++) {
+                $self_data->[$i] /= $other;
+            }
+        }
+        return $self;
+    }
+
     ## -------------------------------------------------------------------------
     ## Math operations
     ## -------------------------------------------------------------------------
