@@ -1,1 +1,5 @@
 .DS_Store
+data/
+author/
+.claude/
+CLAUDE.md
