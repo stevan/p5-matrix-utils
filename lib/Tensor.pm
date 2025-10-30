@@ -81,8 +81,8 @@ class Tensor {
     field @strides :reader;
 
     ADJUST {
-        $data    = $data->at(0) if $data isa Scalar;
-        $shape   = [ map { $_ isa Scalar ? $_->at(0) : $_ } @$shape ];
+        $data    = $data->get if $data isa Scalar;
+        $shape   = [ map { $_ isa Scalar ? $_->get : $_ } @$shape ];
         @strides = calculate_strides($shape);
         $data    = allocate_data_array($shape, $data); # unless ref $data eq 'ARRAY';
         Carp::confess "Bad data size, expected ".$self->size." got (".(scalar @$data).")"
@@ -121,7 +121,7 @@ class Tensor {
     }
 
     method zip_data_arrays ($f, $other) {
-        $other = $other->at(0) if $other isa Scalar;
+        $other = $other->get if $other isa Scalar;
 
         return [
             map { $f->( $data->[$_], $other ) } 0 .. ($self->size - 1)
