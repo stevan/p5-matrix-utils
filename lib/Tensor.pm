@@ -207,6 +207,27 @@ class Tensor {
         $class->initialize([ @$shape ], [ $start .. ($start + ($size - 1)) ]);
     }
 
+    sub random ($class, $shape, $min=0, $max=1) {
+        my $size = calculate_size($shape);
+        my $range = $max - $min;
+        $class->initialize([ ref $shape ? @$shape : $shape ], [ map { $min + rand($range) } 1 .. $size ]);
+    }
+
+    sub randn ($class, $shape, $mean=0, $stddev=1) {
+        # Box-Muller transform for normal distribution
+        my $size = calculate_size($shape);
+        my @values;
+        for (my $i = 0; $i < $size; $i += 2) {
+            my $u1 = rand();
+            my $u2 = rand();
+            my $r = sqrt(-2 * log($u1));
+            my $theta = 2 * 3.14159265358979 * $u2;
+            push @values, $mean + $stddev * $r * cos($theta);
+            push @values, $mean + $stddev * $r * sin($theta) if $i + 1 < $size;
+        }
+        $class->initialize([ ref $shape ? @$shape : $shape ], [ @values[0 .. $size - 1] ]);
+    }
+
     # --------------------------------------------------------------------------
     # Element Access
     # --------------------------------------------------------------------------
@@ -219,7 +240,8 @@ class Tensor {
     # Scalar Values
     # --------------------------------------------------------------------------
 
-    method sum { $self->reduce_data_array(\&Tensor::Ops::add, 0) }
+    method sum  { $self->reduce_data_array(\&Tensor::Ops::add, 0) }
+    method mean { $self->sum / $self->size }
 
     method min_value { $self->reduce_data_array(\&Tensor::Ops::min) }
     method max_value { $self->reduce_data_array(\&Tensor::Ops::max) }
@@ -241,8 +263,11 @@ class Tensor {
     ## -------------------------------------------------------------------------
 
     # unary
-    method neg { $self->unary_op(\&Tensor::Ops::neg) }
-    method abs { $self->unary_op(\&Tensor::Ops::abs) }
+    method neg  { $self->unary_op(\&Tensor::Ops::neg) }
+    method abs  { $self->unary_op(\&Tensor::Ops::abs) }
+    method exp  { $self->unary_op(\&Tensor::Ops::exp) }
+    method log  { $self->unary_op(\&Tensor::Ops::log) }
+    method sqrt { $self->unary_op(\&Tensor::Ops::sqrt) }
 
     # binary
     method add ($other) { $self->binary_op(\&Tensor::Ops::add, $other) }
@@ -293,6 +318,36 @@ class Tensor {
     method max ($other) { $self->binary_op(\&Tensor::Ops::max, $other) }
 
     ## -------------------------------------------------------------------------
+    ## Activation Functions
+    ## -------------------------------------------------------------------------
+
+    method sigmoid {
+        # sigmoid(x) = 1 / (1 + exp(-x))
+        my $one = __CLASS__->ones($self->shape);
+        return $one->div($one->add($self->neg->exp));
+    }
+
+    method relu {
+        # ReLU(x) = max(0, x)
+        return $self->max(0);
+    }
+
+    method tanh {
+        # tanh(x) = (exp(x) - exp(-x)) / (exp(x) + exp(-x))
+        my $exp_pos = $self->exp;
+        my $exp_neg = $self->neg->exp;
+        return $exp_pos->sub($exp_neg)->div($exp_pos->add($exp_neg));
+    }
+
+    method softmax {
+        # softmax(x) = exp(x) / sum(exp(x))
+        # Subtract max for numerical stability
+        my $x_shifted = $self->sub($self->max_value);
+        my $exp_x = $x_shifted->exp;
+        return $exp_x->div($exp_x->sum);
+    }
+
+    ## -------------------------------------------------------------------------
 
     method to_string {
         my @to_draw = @strides;
@@ -341,6 +396,9 @@ package Tensor::Ops {
     # unary
     sub neg ($n)     { -$n }
     sub abs ($n)     { abs($n) }
+    sub exp ($n)     { CORE::exp($n) }
+    sub log ($n)     { CORE::log($n) }
+    sub sqrt ($n)    { CORE::sqrt($n) }
 
     # binary
     sub add ($n, $m) { $n + $m }

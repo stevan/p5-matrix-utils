@@ -156,6 +156,17 @@ class Matrix :isa(Tensor) {
     # - probably some others, can't think of any specific ones atm.
 
     # --------------------------------------------------------------------------
+    # Matrix Transpose
+    # --------------------------------------------------------------------------
+
+    method transpose {
+        return __CLASS__->construct(
+            [ $self->cols, $self->rows ],
+            sub ($x, $y) { $self->at($y, $x) }
+        )
+    }
+
+    # --------------------------------------------------------------------------
     # Matrix Multiplication
     # --------------------------------------------------------------------------
 

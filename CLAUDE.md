@@ -85,12 +85,13 @@ Tensor (lib/Tensor.pm)
 
 ```
 t/
+├── 000-tensor/      # Tensor base class tests (access, constructors, math, comparisons, etc.)
 ├── 010-core/        # Core Tensor functionality (ops, reduce, scalars)
 ├── 100-vector/      # Vector-specific tests (access, math, reductions, concat)
 └── 200-matrix/      # Matrix-specific tests (access, constructors, ops, math, concat/stack)
 ```
 
-Tests use numbered prefixes (e.g., 110-, 120-) to control execution order.
+Tests use numbered prefixes (e.g., 010-, 110-, 120-) to control execution order within directories.
 
 ## Development Notes
 
@@ -100,6 +101,45 @@ Tests use numbered prefixes (e.g., 110-, 120-) to control execution order.
 - Matrix binary operations have special case for Vector operands (broadcasts vector across rows)
 - Index bounds checking uses `Carp::confess` for stack traces
 - Future enhancement idea: lazy evaluation for chained operations (see NOTES.md)
+
+## Neural Network / Machine Learning Features
+
+The library includes features specifically for building neural networks:
+
+**Random Initialization**:
+```perl
+my $W = Matrix->random([784, 128], -0.1, 0.1);  # Uniform distribution
+my $W = Matrix->randn([784, 128], 0, 0.01);     # Normal/Gaussian distribution
+```
+
+**Activation Functions**:
+```perl
+my $activated = $tensor->relu();      # ReLU: max(0, x)
+my $activated = $tensor->sigmoid();   # Sigmoid: 1/(1+exp(-x))
+my $activated = $tensor->tanh();      # Hyperbolic tangent
+my $probs = $tensor->softmax();       # Softmax for classification
+```
+
+**Matrix Operations**:
+```perl
+my $transposed = $matrix->transpose();           # Essential for backprop
+my $result = $matrix->matrix_multiply($vector);  # Linear layer
+```
+
+**Mathematical Functions**:
+```perl
+my $result = $tensor->exp();    # Element-wise exponential
+my $result = $tensor->log();    # Element-wise natural log
+my $result = $tensor->sqrt();   # Element-wise square root
+```
+
+**Reductions**:
+```perl
+my $total = $tensor->sum();     # Sum all elements
+my $avg = $tensor->mean();      # Average of all elements
+```
+
+See `examples/mnist_network.pl` for a complete neural network implementation.
 
 ## Common Patterns
 
@@ -118,6 +158,10 @@ my $zeros = Matrix->zeros([2, 3]);      # 2×3 zero matrix
 my $ones = Vector->ones(5);             # 5-element vector of 1s
 my $seq = Vector->sequence(5, 1);       # [1, 2, 3, 4, 5]
 
+# Random initialization (for neural networks)
+my $rand = Matrix->random([10, 10], -1, 1);     # Uniform [-1, 1]
+my $randn = Matrix->randn([10, 10], 0, 0.1);   # Normal μ=0, σ=0.1
+
 # Construct from generator function
 my $m = Matrix->construct([3, 3], sub ($x, $y) { $x + $y });
 ```
@@ -134,4 +178,5 @@ my $vec = $matrix->row_vector_at(0);   # Get row as Vector object
 my $result = $v1->add($v2);            # Element-wise addition
 my $result = $v1 + $v2;                # Via overloaded operator
 my $result = $m->matrix_multiply($v);  # Matrix-vector multiplication
+my $result = $m->transpose();          # Matrix transpose
 ```
